@@ -5,6 +5,9 @@ on:
   push:
     branches:
       - codex/ios-v2.5.9
+  pull_request:
+    branches:
+      - open-source-v2.5.9
 
 permissions:
   contents: read
