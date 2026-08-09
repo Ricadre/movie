@@ -11,6 +11,7 @@ import 'package:catmovie/app/modules/home/controllers/home_controller.dart';
 import 'package:catmovie/app/widget/k_error_stack.dart';
 import 'package:catmovie/app/widget/window_appbar.dart';
 import 'package:catmovie/shared/manage.dart';
+import 'package:catmovie/shared/live_source_manage.dart';
 import 'package:smooth_list_view/smooth_list_view.dart';
 import 'package:catmovie/shared/enum.dart';
 import 'package:xi/xi.dart';
@@ -92,8 +93,10 @@ class _SourceHelpTableState extends State<SourceHelpTable> {
     return "我知道了";
   }
 
-  Future<void> handleCopyText(
-      {AssetSourceItemJSONData? item, bool canCopyAll = false}) async {
+  Future<void> handleCopyText({
+    AssetSourceItemJSONData? item,
+    bool canCopyAll = false,
+  }) async {
     List<AssetSourceItemJSONData> actions = mirrors;
     if (!canCopyAll && item != null) actions = [item];
     var ctx = Get.context;
@@ -131,7 +134,7 @@ class _SourceHelpTableState extends State<SourceHelpTable> {
         result.add(cx);
       }
     }
-    if (result.isEmpty /* 内容为空 */) return;
+    if (result.isEmpty /* 内容为空 */ ) return;
     updateExtendMirrorList(result);
     showEasyCupertinoDialog(
       content: '已添加到本地(=^-ω-^=)! \n请到 设置->视频源管理 中手动获取配置(源)',
@@ -139,8 +142,9 @@ class _SourceHelpTableState extends State<SourceHelpTable> {
   }
 
   void updateExtendMirrorList(List<String> result) {
-    var old =
-        getSettingAsKeyIdent<String>(SettingsAllKey.mirrorTextarea).trim();
+    var old = getSettingAsKeyIdent<String>(
+      SettingsAllKey.mirrorTextarea,
+    ).trim();
     var lines = old.split('\n').where((element) {
       var cx = element.trim();
       return cx.isNotEmpty;
@@ -170,10 +174,7 @@ class _SourceHelpTableState extends State<SourceHelpTable> {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       allowMultiple: true,
       type: FileType.custom,
-      allowedExtensions: [
-        'json',
-        'txt',
-      ],
+      allowedExtensions: ['json', 'txt'],
     );
 
     if (result == null) {
@@ -195,10 +196,7 @@ class _SourceHelpTableState extends State<SourceHelpTable> {
         .toList()
         .map<Map<String, dynamic>>((item) {
           String filename = item.uri.pathSegments.last;
-          return {
-            sourceKey: item.readAsStringSync(),
-            filenameKey: filename,
-          };
+          return {sourceKey: item.readAsStringSync(), filenameKey: filename};
         })
         .toList()
         .where((e) => verifyStringIsJSON(e[sourceKey] as String))
@@ -211,11 +209,19 @@ class _SourceHelpTableState extends State<SourceHelpTable> {
       return;
     }
     var collData = <String, List<ISpiderAdapter>>{};
+    final importedLiveSources = <LiveSourceConfig>[];
     for (var item in data) {
       String source = item[sourceKey] as String;
       String filename = item[filenameKey] as String;
+      final liveSources = LiveSourceManage.parse(source);
+      importedLiveSources.addAll(liveSources);
       var easyParseData = SourceUtils.tryParseDynamic(source);
-      if (easyParseData == null) continue;
+      if (easyParseData == null) {
+        if (liveSources.isNotEmpty) {
+          collData[filename] = const [];
+        }
+        continue;
+      }
       List<ISpiderAdapter> result = [];
       if (easyParseData is ISpiderAdapter) {
         result = [easyParseData];
@@ -243,20 +249,23 @@ class _SourceHelpTableState extends State<SourceHelpTable> {
         easyMessage += "$k中有$len个源\n";
       }
     });
-    if (stack.isEmpty) {
+    if (stack.isEmpty && importedLiveSources.isEmpty) {
       showEasyCupertinoDialog(
         content: "未导入源, 可能是JSON文件格式不对? :(",
         confirmText: playfulConfirmText,
       );
       return;
     } else {
+      await LiveSourceManage.merge(importedLiveSources);
+
       // 合并新源到现有源列表
       int oldLength = SpiderManage.extend.length;
 
       // 去重：移除已存在的源
       for (var newSource in stack) {
-        bool exists = SpiderManage.extend
-            .any((existing) => existing.meta.api == newSource.meta.api);
+        bool exists = SpiderManage.extend.any(
+          (existing) => existing.meta.api == newSource.meta.api,
+        );
         if (!exists) {
           SpiderManage.extend.add(newSource);
         }
@@ -271,7 +280,7 @@ class _SourceHelpTableState extends State<SourceHelpTable> {
       if (diff <= 0) {
         diffMsg = "本次未合并!没有新的源!";
       }
-      easyMessage += '\n$diffMsg';
+      easyMessage += '\n$diffMsg\n已导入${importedLiveSources.length}个直播源';
       showEasyCupertinoDialog(
         content: Column(
           spacing: 24,
@@ -304,9 +313,7 @@ class _SourceHelpTableState extends State<SourceHelpTable> {
               fontSize: 18,
             ),
           ),
-          KErrorStack(
-            msg: _loadingErrorStack,
-          ),
+          KErrorStack(msg: _loadingErrorStack),
         ],
       ),
     );
@@ -319,15 +326,15 @@ class _SourceHelpTableState extends State<SourceHelpTable> {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Builder(builder: (context) {
-            if (_isLoadingFromAJAX) {
-              return const CircularProgressIndicator();
-            }
-            return const Icon(CupertinoIcons.zzz);
-          }),
-          Text(
-            _wrapperAjaxStatusLable,
-          )
+          Builder(
+            builder: (context) {
+              if (_isLoadingFromAJAX) {
+                return const CircularProgressIndicator();
+              }
+              return const Icon(CupertinoIcons.zzz);
+            },
+          ),
+          Text(_wrapperAjaxStatusLable),
         ],
       ),
     );
@@ -351,9 +358,7 @@ class _SourceHelpTableState extends State<SourceHelpTable> {
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(
-                      right: 12,
-                    ),
+                    padding: const EdgeInsets.only(right: 12),
                     child: Zoom(
                       child: CupertinoButton.filled(
                         padding: const EdgeInsets.symmetric(
@@ -370,9 +375,8 @@ class _SourceHelpTableState extends State<SourceHelpTable> {
                             ),
                             Text(
                               "导入文件",
-                              style: Theme.of(
-                                context,
-                              ).textTheme.bodyLarge!.copyWith(
+                              style: Theme.of(context).textTheme.bodyLarge!
+                                  .copyWith(
                                     color: CupertinoColors.white,
                                     fontSize: 12,
                                   ),
@@ -384,7 +388,7 @@ class _SourceHelpTableState extends State<SourceHelpTable> {
                   ),
                 ],
               ),
-              const Divider()
+              const Divider(),
             ],
           ),
         ),
@@ -433,9 +437,7 @@ class _SourceHelpTableState extends State<SourceHelpTable> {
                   if (mirrors.isEmpty) {
                     if (_canLoadFail) {
                       return Padding(
-                        padding: const EdgeInsets.only(
-                          bottom: 24,
-                        ),
+                        padding: const EdgeInsets.only(bottom: 24),
                         child: CupertinoButton.filled(
                           padding: const EdgeInsets.all(12),
                           child: const Text("重新加载"),
@@ -463,7 +465,7 @@ class _SourceHelpTableState extends State<SourceHelpTable> {
                     ),
                   );
                 },
-              )
+              ),
             ],
           ),
         ),
@@ -519,20 +521,11 @@ class EasyShowModalWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CupertinoAlertDialog(
-      title: Column(
-        children: [
-          Text(title),
-        ],
-      ),
+      title: Column(children: [Text(title)]),
       content: content,
       actions: <CupertinoDialogAction>[
         CupertinoDialogAction(
-          child: Text(
-            confirmText,
-            style: TextStyle(
-              color: confirmTextColor,
-            ),
-          ),
+          child: Text(confirmText, style: TextStyle(color: confirmTextColor)),
           onPressed: () {
             if (onDone != null) {
               onDone!();

@@ -10,6 +10,7 @@ import 'package:catmovie/app/modules/home/controllers/home_controller.dart';
 import 'package:catmovie/app/widget/k_body.dart';
 import 'package:catmovie/app/widget/window_appbar.dart';
 import 'package:catmovie/app/widget/zoom.dart';
+import 'package:catmovie/shared/live_source_manage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -27,8 +28,10 @@ import 'package:xi/xi.dart';
 // https://github.com/hoangnx2204/m3u_utils
 class M3uUtils {
   static Tuple2<String, String> beautiProp(String propInput) {
-    final String prop =
-        propInput.replaceAll('"', '').replaceAll('\'', '').trim();
+    final String prop = propInput
+        .replaceAll('"', '')
+        .replaceAll('\'', '')
+        .trim();
     final List<String> propSplit = prop.split('=');
     return Tuple2(propSplit.first, propSplit.sublist(1).join('='));
   }
@@ -68,7 +71,7 @@ class M3uUtils {
             'name': lineSplit.lastOrNull?.trim() ?? '',
             'duration': duration,
             for (var prop in namedProps)
-              beautiProp(prop).item1: beautiProp(prop).item2
+              beautiProp(prop).item1: beautiProp(prop).item2,
           });
         } else {
           if (line.contains('://')) {
@@ -102,42 +105,30 @@ var scaffoldKey = GlobalKey<ScaffoldState>();
 // https://www.zichen.zone/archives/acg-api.html
 final String kWallpaper = "https://www.dmoe.cc/random.php";
 
-enum LiveSourceType {
-  github,
-  full,
-}
+enum LiveSourceType { github, full }
 
 /// [0] => 名称(如果类型是 Github, 则也为Repo链接)
 /// [1] => 链接(如果类型是 Github, 则也为Repo-path)
 /// [2] => 类型(不为Github则为全量链接)
 /// [3] => 其他内容(可能包含分支等信息)
-typedef LiveSourceLinkType
-    = Tuple4<String, String, LiveSourceType, Map<String, String>>;
+typedef LiveSourceLinkType =
+    Tuple4<String, String, LiveSourceType, Map<String, String>>;
 
 // TODO(d1y): support dynamic use live sources
 final List<LiveSourceLinkType> kLiveSources = [
   // https://github.com/vbskycn/iptv
-  Tuple4(
-    "vbskycn/iptv",
-    "tv/iptv4.m3u",
-    LiveSourceType.github,
-    {"branch": "master"},
-  ),
+  Tuple4("vbskycn/iptv", "tv/iptv4.m3u", LiveSourceType.github, {
+    "branch": "master",
+  }),
   // https://github.com/kimwang1978/collect-tv-txt
   // 这个直播源好像不错🤔?
-  Tuple4(
-    "kimwang1978/collect-tv-txt",
-    "bbxx_lite.m3u",
-    LiveSourceType.github,
-    {"branch": "main"},
-  ),
+  Tuple4("kimwang1978/collect-tv-txt", "bbxx_lite.m3u", LiveSourceType.github, {
+    "branch": "main",
+  }),
   // https://github.com/Guovin/iptv-api
-  Tuple4(
-    "Guovin/iptv-api",
-    "output/ipv4/result.m3u",
-    LiveSourceType.github,
-    {"branch": "gd"},
-  ),
+  Tuple4("Guovin/iptv-api", "output/ipv4/result.m3u", LiveSourceType.github, {
+    "branch": "gd",
+  }),
   // https://github.com/hujingguang/ChinaIPTV
   // TODO(d1y): 支持解析 m3u8
   // Tuple4(
@@ -147,19 +138,13 @@ final List<LiveSourceLinkType> kLiveSources = [
   //   {"branch": "main"},
   // ),
   // https://github.com/TianmuTNT/iptv
-  Tuple4(
-    "TianmuTNT/iptv",
-    "iptv.m3u",
-    LiveSourceType.github,
-    {"branch": "main"},
-  ),
+  Tuple4("TianmuTNT/iptv", "iptv.m3u", LiveSourceType.github, {
+    "branch": "main",
+  }),
   // https://github.com/mytv-android/China-TV-Live-M3U8
-  Tuple4(
-    "mytv-android/China-TV-Live-M3U8",
-    "iptv.m3u",
-    LiveSourceType.github,
-    {"branch": "main"},
-  ),
+  Tuple4("mytv-android/China-TV-Live-M3U8", "iptv.m3u", LiveSourceType.github, {
+    "branch": "main",
+  }),
   // https://tv.iill.top
   // Tuple4("大葱直播(电视)", "https://tv.iill.top/m3u/Gather", LiveSourceType.full, {}),
   // Tuple4("大葱直播(网络)", "https://tv.iill.top/m3u/Live", LiveSourceType.full, {}),
@@ -224,7 +209,7 @@ class Groups {
           url: tvUrl,
           logo: logo,
           id: id ?? generateRandomInt(6),
-        )
+        ),
       ];
     } else {
       tvs[groupName]!.add(
@@ -253,9 +238,6 @@ class Groups {
 }
 
 class Loader {
-  static final urlReg = RegExp(
-      r'(((ht|f)tps?):\/\/)?([^!@#$%^&*?.\s-]([^!@#$%^&*?.\s]{0,63}[^!@#$%^&*?.\s])?\.)+[a-z]{2,6}\/?');
-
   static Groups parseM3u(String rawM3uTxt) {
     var groups = Groups();
     var map = M3uUtils.parse(rawM3uTxt);
@@ -284,17 +266,22 @@ class Loader {
     var currKey = "";
     for (var line in lines) {
       line = line.trim();
-      if (line.isEmpty) {
-        currKey = "";
+      if (line.isEmpty) continue;
+
+      final separator = line.indexOf(',');
+      if (separator < 0) {
+        if (!line.contains('://')) currKey = line;
         continue;
       }
-      var cxx = line.split(",");
-      if (!urlReg.hasMatch(line) && currKey.isEmpty) {
-        currKey = cxx[0];
+
+      final name = line.substring(0, separator).trim();
+      final value = line.substring(separator + 1).trim();
+      if (value.toLowerCase() == '#genre#') {
+        currKey = name;
         continue;
       }
-      if (currKey.isEmpty || cxx.length != 2) continue;
-      groups.addTv(currKey, cxx[0], cxx[1]);
+      if (name.isEmpty || !value.contains('://')) continue;
+      groups.addTv(currKey.isEmpty ? '未分类' : currKey, name, value);
     }
     return groups;
   }
@@ -304,10 +291,12 @@ class LiveSource {
   final String name;
   final String url;
   final int id;
+  final LiveSourceFormat format;
   LiveSource({
     required this.name,
     required this.url,
     required this.id,
+    required this.format,
   });
 }
 
@@ -328,6 +317,12 @@ class LiveSourceGroups {
   }
 
   LiveSourceGroups.withInit() {
+    if (LiveSourceManage.sources.isNotEmpty) {
+      for (final source in LiveSourceManage.sources) {
+        add(source.name, source.url, format: source.format);
+      }
+      return;
+    }
     for (var cx in kLiveSources) {
       add(cx.item1, _2url(cx, false));
     }
@@ -345,12 +340,17 @@ class LiveSourceGroups {
     return map[source];
   }
 
-  void add(String name, String url) {
+  void add(String name, String url, {LiveSourceFormat? format}) {
     sources.add(
       LiveSource(
         name: name,
         url: url,
         id: generateRandomInt(6),
+        format:
+            format ??
+            (url.toLowerCase().endsWith('.txt')
+                ? LiveSourceFormat.txt
+                : LiveSourceFormat.m3u),
       ),
     );
   }
@@ -364,15 +364,9 @@ class LiveSourceGroups {
       );
       String body = resp.data ?? "";
       if (body.isEmpty) return false;
-      late Groups groups;
-      if (source.url.endsWith(".m3u")) {
-        groups = Loader.parseM3u(body);
-      } else {
-        // TODO(d1y): support more format
-        if (source.url.endsWith(".txt")) {
-          groups = Loader.parseTxt(body);
-        }
-      }
+      final groups = source.format == LiveSourceFormat.txt
+          ? Loader.parseTxt(body)
+          : Loader.parseM3u(body);
       map[source] = groups;
       return true;
     } catch (e) {
@@ -435,8 +429,9 @@ class TVUIState extends State<TVUI>
   bool showPlayPauseIcon = false;
   Timer? _playPauseIconTimer;
 
-  void _showPlayPauseIconForDuration(
-      [Duration duration = const Duration(milliseconds: 800)]) {
+  void _showPlayPauseIconForDuration([
+    Duration duration = const Duration(milliseconds: 800),
+  ]) {
     setState(() {
       showPlayPauseIcon = true;
     });
@@ -476,6 +471,7 @@ class TVUIState extends State<TVUI>
   @override
   void dispose() {
     _playPauseIconTimer?.cancel();
+    LiveSourceManage.revision.removeListener(_reloadLiveSources);
     player.dispose().catchError((error) {
       debugPrint("player dispose error: $error");
     });
@@ -488,6 +484,7 @@ class TVUIState extends State<TVUI>
 
   @override
   void initState() {
+    LiveSourceManage.revision.addListener(_reloadLiveSources);
     if (GetPlatform.isDesktop) {
       windowManager.addListener(this);
     }
@@ -512,11 +509,26 @@ class TVUIState extends State<TVUI>
   }
 
   void initData() async {
+    if (liveSourceGroups.sources.isEmpty) return;
     var isSuccess = await liveSourceGroups.refreshSource(
       liveSourceGroups.sources.first,
     );
     if (!isSuccess) return;
     selectLiveSourceGroup(liveSourceGroups.sources.first);
+  }
+
+  void _reloadLiveSources() {
+    if (!mounted) return;
+    final previousUrl = currLiveSource?.url;
+    final updated = LiveSourceGroups.withInit();
+    if (updated.sources.isEmpty) return;
+
+    liveSourceGroups = updated;
+    final selected = updated.sources.firstWhere(
+      (source) => source.url == previousUrl,
+      orElse: () => updated.sources.first,
+    );
+    selectLiveSourceGroup(selected);
   }
 
   void resetCurrGroupState() {
@@ -559,10 +571,7 @@ class TVUIState extends State<TVUI>
       left: 0,
       right: 0,
       child: CustomMoveWindow(
-        child: SizedBox(
-          width: double.infinity,
-          height: 42,
-        ),
+        child: SizedBox(width: double.infinity, height: 42),
       ),
     );
   }
@@ -578,9 +587,7 @@ class TVUIState extends State<TVUI>
       elevation: 0,
       backgroundColor: Colors.transparent,
       child: Padding(
-        padding: EdgeInsets.only(
-          bottom: context.mediaQuery.padding.bottom,
-        ),
+        padding: EdgeInsets.only(bottom: context.mediaQuery.padding.bottom),
         child: Stack(
           children: [
             Positioned.fill(
@@ -602,180 +609,193 @@ class TVUIState extends State<TVUI>
             ),
             Positioned.fill(
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 6.0,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 6.0),
                 child: Column(
                   children: [
                     Expanded(
-                      child: Row(children: [
-                        Expanded(
-                          flex: isDesktop ? 6 : 4,
-                          child: Column(
-                            children: [
-                              Expanded(
-                                child: SmoothListView.builder(
-                                  duration: kSmoothListViewDuration,
-                                  itemCount: groups.names.length,
-                                  itemBuilder: (cx, idx) {
-                                    var name = groups.names[idx];
-                                    var isSelected = currGroupName == name;
-                                    return Material(
-                                      color: Colors.transparent,
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 3,
-                                          vertical: 1,
-                                        ).copyWith(
-                                          top: idx == 0 ? 24 : 1,
-                                        ),
-                                        child: Zoom(
-                                          child: ListTile(
-                                            dense: true,
-                                            selected: isSelected,
-                                            selectedTileColor: kActiveColor,
-                                            hoverColor: Colors.white
-                                                .withValues(alpha: 0.1),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                            ),
-                                            title: Text(
-                                              name,
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 18,
-                                                fontWeight: isSelected
-                                                    ? FontWeight.w600
-                                                    : FontWeight.normal,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: isDesktop ? 6 : 4,
+                            child: Column(
+                              children: [
+                                Expanded(
+                                  child: SmoothListView.builder(
+                                    duration: kSmoothListViewDuration,
+                                    itemCount: groups.names.length,
+                                    itemBuilder: (cx, idx) {
+                                      var name = groups.names[idx];
+                                      var isSelected = currGroupName == name;
+                                      return Material(
+                                        color: Colors.transparent,
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 3,
+                                            vertical: 1,
+                                          ).copyWith(top: idx == 0 ? 24 : 1),
+                                          child: Zoom(
+                                            child: ListTile(
+                                              dense: true,
+                                              selected: isSelected,
+                                              selectedTileColor: kActiveColor,
+                                              hoverColor: Colors.white
+                                                  .withValues(alpha: 0.1),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
                                               ),
+                                              title: Text(
+                                                name,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 18,
+                                                  fontWeight: isSelected
+                                                      ? FontWeight.w600
+                                                      : FontWeight.normal,
+                                                ),
+                                              ),
+                                              onFocusChange: (flag) {
+                                                currGroupName = name;
+                                                currTVIdx = 0;
+                                                setState(() {});
+                                                if (currTVS.isNotEmpty) {
+                                                  playURL(currTVS[0].url);
+                                                }
+                                              },
+                                              onTap: () {
+                                                currGroupName = name;
+                                                currTVIdx = 0;
+                                                setState(() {});
+                                                if (currTVS.isNotEmpty) {
+                                                  playURL(
+                                                    currTVS[0].url,
+                                                    isCloseDrawer: false,
+                                                  );
+                                                }
+                                              },
                                             ),
-                                            onFocusChange: (flag) {
-                                              currGroupName = name;
-                                              currTVIdx = 0;
-                                              setState(() {});
-                                              if (currTVS.isNotEmpty) {
-                                                playURL(currTVS[0].url);
-                                              }
-                                            },
-                                            onTap: () {
-                                              currGroupName = name;
-                                              currTVIdx = 0;
-                                              setState(() {});
-                                              if (currTVS.isNotEmpty) {
-                                                playURL(currTVS[0].url,
-                                                    isCloseDrawer: false);
-                                              }
-                                            },
                                           ),
                                         ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                              if (!isDesktop)
-                                Container(
-                                  width: double.infinity,
-                                  padding: EdgeInsets.only(
-                                      bottom: 12, left: 12, right: 12),
-                                  child: CupertinoButton.filled(
-                                    sizeStyle: CupertinoButtonSize.small,
-                                    color: '#3e3e3e'.$color,
-                                    child: Text(
-                                      "关闭",
-                                      style: TextStyle(
-                                        color: '#767579'.$color,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    onPressed: () {
-                                      scaffoldKey.currentState?.closeDrawer();
+                                      );
                                     },
                                   ),
                                 ),
-                            ],
-                          ),
-                        ),
-                        if (currTVIdx >= 0)
-                          Container(
-                            width: 1,
-                            decoration: BoxDecoration(
-                              color: Colors.white
-                                  .withValues(alpha: isDesktop ? 0.18 : .42),
-                            ),
-                          ),
-                        if (currTVIdx >= 0)
-                          Expanded(
-                            flex: isDesktop ? 9 : 6,
-                            child: SmoothListView.builder(
-                              duration: kSmoothListViewDuration,
-                              itemCount: currTVS.length,
-                              itemBuilder: (cx, idx) {
-                                var tv = currTVS[idx];
-                                var isSelected = currTVIdx == idx;
-                                return Material(
-                                  color: Colors.transparent,
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 3,
-                                      vertical: 3,
-                                    ).copyWith(
-                                      top: idx == 0 ? 24 : 1,
+                                if (!isDesktop)
+                                  Container(
+                                    width: double.infinity,
+                                    padding: EdgeInsets.only(
+                                      bottom: 12,
+                                      left: 12,
+                                      right: 12,
                                     ),
-                                    child: Zoom(
-                                      child: ListTile(
-                                        dense: true,
-                                        contentPadding:
-                                            EdgeInsets.only(left: 12),
-                                        selected: isSelected,
-                                        selectedTileColor: kActiveColor,
-                                        hoverColor:
-                                            Colors.white.withValues(alpha: 0.1),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(8),
+                                    child: CupertinoButton.filled(
+                                      sizeStyle: CupertinoButtonSize.small,
+                                      color: '#3e3e3e'.$color,
+                                      child: Text(
+                                        "关闭",
+                                        style: TextStyle(
+                                          color: '#767579'.$color,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
                                         ),
-                                        title: Text(
-                                          tv.name,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 16,
-                                            fontWeight: isSelected
-                                                ? FontWeight.w600
-                                                : FontWeight.normal,
-                                          ),
-                                        ),
-                                        leading: CachedNetworkImage(
-                                          width: 48,
-                                          height: double.infinity,
-                                          imageUrl: tv.logo!,
-                                          errorWidget: (_, __, ___) => Icon(
-                                            Icons.live_tv,
-                                            size: 32,
-                                          ),
-                                          placeholder: (_, __) => Center(
-                                            child: CupertinoActivityIndicator(),
-                                          ),
-                                        ),
-                                        onTap: () {
-                                          currTVIdx = idx;
-                                          setState(() {});
-                                          playURL(tv.url);
-                                        },
                                       ),
+                                      onPressed: () {
+                                        scaffoldKey.currentState?.closeDrawer();
+                                      },
                                     ),
                                   ),
-                                );
-                              },
+                              ],
                             ),
                           ),
-                      ]),
+                          if (currTVIdx >= 0)
+                            Container(
+                              width: 1,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(
+                                  alpha: isDesktop ? 0.18 : .42,
+                                ),
+                              ),
+                            ),
+                          if (currTVIdx >= 0)
+                            Expanded(
+                              flex: isDesktop ? 9 : 6,
+                              child: SmoothListView.builder(
+                                duration: kSmoothListViewDuration,
+                                itemCount: currTVS.length,
+                                itemBuilder: (cx, idx) {
+                                  var tv = currTVS[idx];
+                                  var isSelected = currTVIdx == idx;
+                                  return Material(
+                                    color: Colors.transparent,
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 3,
+                                        vertical: 3,
+                                      ).copyWith(top: idx == 0 ? 24 : 1),
+                                      child: Zoom(
+                                        child: ListTile(
+                                          dense: true,
+                                          contentPadding: EdgeInsets.only(
+                                            left: 12,
+                                          ),
+                                          selected: isSelected,
+                                          selectedTileColor: kActiveColor,
+                                          hoverColor: Colors.white.withValues(
+                                            alpha: 0.1,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                          ),
+                                          title: Text(
+                                            tv.name,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 16,
+                                              fontWeight: isSelected
+                                                  ? FontWeight.w600
+                                                  : FontWeight.normal,
+                                            ),
+                                          ),
+                                          leading:
+                                              (tv.logo?.isNotEmpty ?? false)
+                                              ? CachedNetworkImage(
+                                                  width: 48,
+                                                  height: double.infinity,
+                                                  imageUrl: tv.logo!,
+                                                  errorWidget: (_, __, ___) =>
+                                                      Icon(
+                                                        Icons.live_tv,
+                                                        size: 32,
+                                                      ),
+                                                  placeholder: (_, __) => Center(
+                                                    child:
+                                                        CupertinoActivityIndicator(),
+                                                  ),
+                                                )
+                                              : const Icon(
+                                                  Icons.live_tv,
+                                                  size: 32,
+                                                ),
+                                          onTap: () {
+                                            currTVIdx = idx;
+                                            setState(() {});
+                                            playURL(tv.url);
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -832,9 +852,7 @@ class TVUIState extends State<TVUI>
               return AnimatedOpacity(
                 opacity: isNext ? 1 : 0,
                 duration: const Duration(milliseconds: 210),
-                child: const Center(
-                  child: CircularProgressIndicator(),
-                ),
+                child: const Center(child: CircularProgressIndicator()),
               );
             },
           ),
@@ -908,10 +926,7 @@ class TVUIState extends State<TVUI>
                         onPressed: showMenu,
                         child: Row(
                           spacing: 6,
-                          children: [
-                            Icon(CupertinoIcons.tv),
-                            Text("播放源"),
-                          ],
+                          children: [Icon(CupertinoIcons.tv), Text("播放源")],
                         ),
                       );
                     }),
@@ -952,7 +967,7 @@ class TVUIState extends State<TVUI>
                       ),
                     ),
                   ],
-                )
+                ),
               ],
             ),
           ),
@@ -1002,13 +1017,21 @@ class TVUIState extends State<TVUI>
                             child: Row(
                               spacing: 6,
                               children: [
-                                Text("LIVE", style: TextStyle(color: Colors.white)),
+                                Text(
+                                  "LIVE",
+                                  style: TextStyle(color: Colors.white),
+                                ),
                                 Container(
                                   width: 12,
                                   height: 12,
                                   decoration: BoxDecoration(
                                     // 正常播放显示绿色, 播放失败显示红色
-                                    color: state.widget.controller.player.state
+                                    color:
+                                        state
+                                            .widget
+                                            .controller
+                                            .player
+                                            .state
                                             .playing
                                         ? Colors.green
                                         : Colors.red,
@@ -1103,29 +1126,36 @@ class TVUIState extends State<TVUI>
                           // 全屏
                           Zoom(
                             child: IconButton(
-                              icon: const Icon(Icons.fullscreen, color: Colors.white),
+                              icon: const Icon(
+                                Icons.fullscreen,
+                                color: Colors.white,
+                              ),
                               onPressed: () async {
                                 if (GetPlatform.isDesktop) {
-                                  bool isFullScreen =
-                                      await windowManager.isFullScreen();
+                                  bool isFullScreen = await windowManager
+                                      .isFullScreen();
                                   windowManager.setFullScreen(!isFullScreen);
                                 } else {
-                                  var orientation =
-                                      MediaQuery.of(context).orientation;
+                                  var orientation = MediaQuery.of(
+                                    context,
+                                  ).orientation;
                                   if (orientation == Orientation.portrait) {
-                                    await SystemChrome
-                                        .setPreferredOrientations([
-                                      DeviceOrientation.landscapeLeft,
-                                      DeviceOrientation.landscapeRight,
-                                    ]);
-                                    homeController
-                                        .setBottomNavigationBar(false);
+                                    await SystemChrome.setPreferredOrientations(
+                                      [
+                                        DeviceOrientation.landscapeLeft,
+                                        DeviceOrientation.landscapeRight,
+                                      ],
+                                    );
+                                    homeController.setBottomNavigationBar(
+                                      false,
+                                    );
                                   } else {
-                                    await SystemChrome
-                                        .setPreferredOrientations([
-                                      DeviceOrientation.portraitUp,
-                                      DeviceOrientation.portraitDown,
-                                    ]);
+                                    await SystemChrome.setPreferredOrientations(
+                                      [
+                                        DeviceOrientation.portraitUp,
+                                        DeviceOrientation.portraitDown,
+                                      ],
+                                    );
                                     homeController.setBottomNavigationBar(true);
                                   }
                                   showVideoControls = false;
@@ -1148,13 +1178,14 @@ class TVUIState extends State<TVUI>
   }
 
   Widget _buildNowLiveTV() {
-    return Builder(builder: (context) {
-      if (currTVIdx < 0) {
-        return const SizedBox.shrink();
-      }
-      var tv = currTVS[currTVIdx];
-      return Container(
-        decoration: BoxDecoration(
+    return Builder(
+      builder: (context) {
+        if (currTVIdx < 0) {
+          return const SizedBox.shrink();
+        }
+        var tv = currTVS[currTVIdx];
+        return Container(
+          decoration: BoxDecoration(
             color: '#313131'.$color.withValues(alpha: .42),
             border: Border.all(
               color: kActiveColor.withValues(alpha: .72),
@@ -1169,47 +1200,42 @@ class TVUIState extends State<TVUI>
                 spreadRadius: 0,
                 offset: Offset(0, 0),
               ),
-            ]),
-        clipBehavior: Clip.hardEdge,
-        padding: EdgeInsets.symmetric(
-          horizontal: 9,
-          vertical: 3,
-        ),
-        child: Row(
-          spacing: 6,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CachedNetworkImage(
-              width: 24,
-              height: 24,
-              imageUrl: tv.logo ?? "",
-              errorWidget: (_, __, ___) => Icon(
-                Icons.live_tv,
-                size: 24,
+            ],
+          ),
+          clipBehavior: Clip.hardEdge,
+          padding: EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+          child: Row(
+            spacing: 6,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CachedNetworkImage(
+                width: 24,
+                height: 24,
+                imageUrl: tv.logo ?? "",
+                errorWidget: (_, __, ___) => Icon(Icons.live_tv, size: 24),
+                placeholder: (_, __) =>
+                    Center(child: CupertinoActivityIndicator()),
               ),
-              placeholder: (_, __) => Center(
-                child: CupertinoActivityIndicator(),
+              Text(
+                tv.name,
+                style: TextStyle(
+                  color: '#27b2ff'.$color.withValues(alpha: .88),
+                ),
               ),
-            ),
-            Text(
-              tv.name,
-              style: TextStyle(
-                color: '#27b2ff'.$color.withValues(alpha: .88),
+              Container(
+                width: 9,
+                height: 9,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(9),
+                  // TODO(d1y): 动态获取播放状态, 正常为 green, 错误为 red
+                  color: '#03ff00'.$color,
+                ),
               ),
-            ),
-            Container(
-              width: 9,
-              height: 9,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(9),
-                // TODO(d1y): 动态获取播放状态, 正常为 green, 错误为 red
-                color: '#03ff00'.$color,
-              ),
-            ),
-          ],
-        ),
-      );
-    });
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Widget _buildBody() {
@@ -1245,7 +1271,7 @@ class TVUIState extends State<TVUI>
         drawer: _buildDrawer(),
         body: Shortcuts(
           shortcuts: {
-            SingleActivator(LogicalKeyboardKey.keyS, meta: true): TabToggle()
+            SingleActivator(LogicalKeyboardKey.keyS, meta: true): TabToggle(),
           },
           child: Actions(
             actions: {
@@ -1262,7 +1288,9 @@ class TVUIState extends State<TVUI>
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 240),
                 padding: EdgeInsets.only(
-                  bottom: homeController.showBottomNavigationBar ? kDefaultAppBottomBarHeight : 0,
+                  bottom: homeController.showBottomNavigationBar
+                      ? kDefaultAppBottomBarHeight
+                      : 0,
                 ),
                 child: Stack(
                   children: [
@@ -1304,8 +1332,10 @@ class TVUIState extends State<TVUI>
                                       child: Row(
                                         spacing: 12,
                                         children: [
-                                          _buildLiveSourceButton(
-                                              (cx, showMenu) {
+                                          _buildLiveSourceButton((
+                                            cx,
+                                            showMenu,
+                                          ) {
                                             var name = "播放源";
                                             if (currLiveSource != null) {
                                               name = currLiveSource!.name;
@@ -1328,10 +1358,12 @@ class TVUIState extends State<TVUI>
                                                     Expanded(
                                                       child: Text(
                                                         name,
-                                                        overflow: TextOverflow.ellipsis,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
                                                         maxLines: 1,
                                                         style: TextStyle(
-                                                          color: '#767579'.$color,
+                                                          color:
+                                                              '#767579'.$color,
                                                         ),
                                                       ),
                                                     ),
@@ -1347,7 +1379,7 @@ class TVUIState extends State<TVUI>
                                           }),
                                           Zoom(
                                             child: ConstrainedBox(
-                                                constraints: BoxConstraints(
+                                              constraints: BoxConstraints(
                                                 maxWidth: 120,
                                               ),
                                               child: CupertinoButton.filled(
@@ -1360,30 +1392,37 @@ class TVUIState extends State<TVUI>
                                                 child: Row(
                                                   children: [
                                                     Expanded(
-                                                      child: Builder(builder: (context) {
-                                                        var channelName =
-                                                            currGroupName.isNotEmpty
-                                                                ? currGroupName
-                                                                : "全部频道";
-                                                        if (currGroupName
-                                                            .isNotEmpty) {
-                                                          channelName +=
-                                                              "(${currTVS.length})";
-                                                        }
-                                                        return Text(
-                                                          channelName,
-                                                          overflow: TextOverflow.ellipsis,
-                                                        maxLines: 1,
-                                                          style: TextStyle(
-                                                              color:
-                                                                  '#767579'.$color),
-                                                        );
-                                                      }),
+                                                      child: Builder(
+                                                        builder: (context) {
+                                                          var channelName =
+                                                              currGroupName
+                                                                  .isNotEmpty
+                                                              ? currGroupName
+                                                              : "全部频道";
+                                                          if (currGroupName
+                                                              .isNotEmpty) {
+                                                            channelName +=
+                                                                "(${currTVS.length})";
+                                                          }
+                                                          return Text(
+                                                            channelName,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                            maxLines: 1,
+                                                            style: TextStyle(
+                                                              color: '#767579'
+                                                                  .$color,
+                                                            ),
+                                                          );
+                                                        },
+                                                      ),
                                                     ),
                                                     Icon(
-                                                        CupertinoIcons
-                                                            .chevron_down,
-                                                        color: '#8e8e92'.$color),
+                                                      CupertinoIcons
+                                                          .chevron_down,
+                                                      color: '#8e8e92'.$color,
+                                                    ),
                                                   ],
                                                 ),
                                                 onPressed: () {
@@ -1403,119 +1442,138 @@ class TVUIState extends State<TVUI>
                                         padding: EdgeInsets.symmetric(
                                           horizontal: 12,
                                         ),
-                                        child: Builder(builder: (context) {
-                                          var tvs = currTVS;
-                                          if (tvs.isEmpty) {
-                                            return Center(
-                                              child: Column(
-                                                spacing: 12,
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Icon(
-                                                    CupertinoIcons
-                                                        .bubble_middle_bottom,
-                                                    size: 66,
-                                                    color: Colors.white,
-                                                  ),
-                                                  Text("请先选择频道 :)", style: TextStyle(color: Colors.white),),
-                                                  SizedBox(
-                                                    height: context.mediaQuery
-                                                            .size.height *
-                                                        .12,
-                                                  ),
-                                                ],
-                                              ),
-                                            );
-                                          }
-                                          return SmoothListView.builder(
-                                            duration: kSmoothListViewDuration,
-                                            itemCount: tvs.length,
-                                            itemBuilder: (cx, idx) {
-                                              var item = tvs[idx];
-                                              var isSelected = currTVIdx == idx;
-                                              return Material(
-                                                color: Colors.transparent,
-                                                child: Padding(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(vertical: 3),
-                                                  child: ListTile(
-                                                    dense: true,
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              8),
+                                        child: Builder(
+                                          builder: (context) {
+                                            var tvs = currTVS;
+                                            if (tvs.isEmpty) {
+                                              return Center(
+                                                child: Column(
+                                                  spacing: 12,
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Icon(
+                                                      CupertinoIcons
+                                                          .bubble_middle_bottom,
+                                                      size: 66,
+                                                      color: Colors.white,
                                                     ),
-                                                    onTap: () {
-                                                      currTVIdx = idx;
-                                                      setState(() {});
-                                                      playURL(item.url);
-                                                    },
-                                                    selected: isSelected,
-                                                    contentPadding:
-                                                        EdgeInsets.zero,
-                                                    selectedTileColor:
-                                                        kActiveColor,
-                                                    hoverColor: Colors.white
-                                                        .withValues(
-                                                            alpha: 0.42),
-                                                    leading: CachedNetworkImage(
-                                                      width: 80,
-                                                      height: double.infinity,
-                                                      imageUrl: item.logo ?? "",
-                                                      errorWidget:
-                                                          (_, __, ___) => Icon(
-                                                        Icons.live_tv,
-                                                        size: 48,
-                                                      ),
-                                                      placeholder: (_, __) =>
-                                                          Center(
-                                                        child:
-                                                            CupertinoActivityIndicator(),
-                                                      ),
-                                                    ),
-                                                    title: Text(
-                                                      item.name,
+                                                    Text(
+                                                      "请先选择频道 :)",
                                                       style: TextStyle(
                                                         color: Colors.white,
-                                                        fontSize: 28,
-                                                        fontWeight: isSelected
-                                                            ? FontWeight.w600
-                                                            : FontWeight.normal,
                                                       ),
                                                     ),
-                                                    subtitle: Row(
-                                                      children: [
-                                                        Container(
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            color: '#2a2a2a'
-                                                                .$color,
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        12),
-                                                          ),
-                                                          padding: EdgeInsets
-                                                              .symmetric(
-                                                            vertical: 3,
-                                                            horizontal: 12,
-                                                          ),
-                                                          child: Text(
-                                                            item.groupName,
-                                                            style: TextStyle(
-                                                                color: Colors
-                                                                    .white),
-                                                          ),
-                                                        ),
-                                                      ],
+                                                    SizedBox(
+                                                      height:
+                                                          context
+                                                              .mediaQuery
+                                                              .size
+                                                              .height *
+                                                          .12,
                                                     ),
-                                                  ),
+                                                  ],
                                                 ),
                                               );
-                                            },
-                                          );
-                                        }),
+                                            }
+                                            return SmoothListView.builder(
+                                              duration: kSmoothListViewDuration,
+                                              itemCount: tvs.length,
+                                              itemBuilder: (cx, idx) {
+                                                var item = tvs[idx];
+                                                var isSelected =
+                                                    currTVIdx == idx;
+                                                return Material(
+                                                  color: Colors.transparent,
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          vertical: 3,
+                                                        ),
+                                                    child: ListTile(
+                                                      dense: true,
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              8,
+                                                            ),
+                                                      ),
+                                                      onTap: () {
+                                                        currTVIdx = idx;
+                                                        setState(() {});
+                                                        playURL(item.url);
+                                                      },
+                                                      selected: isSelected,
+                                                      contentPadding:
+                                                          EdgeInsets.zero,
+                                                      selectedTileColor:
+                                                          kActiveColor,
+                                                      hoverColor: Colors.white
+                                                          .withValues(
+                                                            alpha: 0.42,
+                                                          ),
+                                                      leading: CachedNetworkImage(
+                                                        width: 80,
+                                                        height: double.infinity,
+                                                        imageUrl:
+                                                            item.logo ?? "",
+                                                        errorWidget:
+                                                            (_, __, ___) =>
+                                                                Icon(
+                                                                  Icons.live_tv,
+                                                                  size: 48,
+                                                                ),
+                                                        placeholder: (_, __) =>
+                                                            Center(
+                                                              child:
+                                                                  CupertinoActivityIndicator(),
+                                                            ),
+                                                      ),
+                                                      title: Text(
+                                                        item.name,
+                                                        style: TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 28,
+                                                          fontWeight: isSelected
+                                                              ? FontWeight.w600
+                                                              : FontWeight
+                                                                    .normal,
+                                                        ),
+                                                      ),
+                                                      subtitle: Row(
+                                                        children: [
+                                                          Container(
+                                                            decoration: BoxDecoration(
+                                                              color: '#2a2a2a'
+                                                                  .$color,
+                                                              borderRadius:
+                                                                  BorderRadius.circular(
+                                                                    12,
+                                                                  ),
+                                                            ),
+                                                            padding:
+                                                                EdgeInsets.symmetric(
+                                                                  vertical: 3,
+                                                                  horizontal:
+                                                                      12,
+                                                                ),
+                                                            child: Text(
+                                                              item.groupName,
+                                                              style: TextStyle(
+                                                                color: Colors
+                                                                    .white,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                            );
+                                          },
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -1537,12 +1595,7 @@ class TVUIState extends State<TVUI>
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        _buildBody(),
-        _buildDesktopCTRL(),
-      ],
-    );
+    return Stack(children: [_buildBody(), _buildDesktopCTRL()]);
   }
 }
 

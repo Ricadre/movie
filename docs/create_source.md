@@ -33,6 +33,39 @@
 
 <img src="https://s2.loli.net/2025/09/23/ADKMEhG5oHkvbnV.png" width="320" />
 
+## 组合订阅与直播源
+
+本分支兼容 `sites`、`data`、`mirrors` 三种视频源根字段，并支持在同一份订阅中使用
+`lives` 配置 M3U/TXT 直播源：
+
+```jsonc
+{
+  "sites": [
+    {
+      "id": "cms-demo",
+      "name": "CMS 示例",
+      "type": 0,
+      "api": "https://example.com/api.php/provide/vod/"
+    }
+  ],
+  "lives": [
+    {
+      "name": "电视直播",
+      "url": "https://example.com/live.m3u",
+      "type": 0 // 0=m3u
+    },
+    {
+      "name": "备用直播",
+      "url": "https://example.com/live.txt",
+      "type": 1 // 1=txt
+    }
+  ]
+}
+```
+
+同步「视频源管理」中的订阅后，直播源会自动持久化并显示在 TV 页的直播源菜单中。
+如果订阅没有提供 `lives`，TV 页会回退到 2.5.9 内置的直播源列表。
+
 ## 苹果源
 
 小猫影视完善的实现了苹果CMS的源(XML/JSON都支持)

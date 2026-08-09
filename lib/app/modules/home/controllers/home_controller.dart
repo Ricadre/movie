@@ -1,5 +1,4 @@
 import 'package:catmovie/utils/boop.dart';
-import 'package:command_palette/command_palette.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -34,7 +33,7 @@ enum UpdateSearchHistoryType {
   remove,
 
   /// 清除所有
-  clean
+  clean,
 }
 
 Widget kActivityIndicator = NutsActivityIndicator(
@@ -177,9 +176,7 @@ class HomeController extends GetxController
     _cacheMirrorIndex = newVal;
     currentCategoryerNow = null;
     update();
-    updateHomeData(
-      isFirst: true,
-    );
+    updateHomeData(isFirst: true);
   }
 
   /// 清理缓存
@@ -433,8 +430,10 @@ class HomeController extends GetxController
 
   /// [isFirst] 初始化加载数据需要将 [isLoading] => true
   /// [missIsLoading] 某些特殊情况下不需要设置 [isLoading] => true
-  Future<void> updateHomeData(
-      {bool isFirst = false, missIsLoading = false}) async {
+  Future<void> updateHomeData({
+    bool isFirst = false,
+    missIsLoading = false,
+  }) async {
     /// 如果都没有源, 则不需要加载数据
     /// => +_+ 还玩个球啊
     if (mirrorListIsEmpty) return;
@@ -447,7 +446,8 @@ class HomeController extends GetxController
       var dispose = showLoading("加载分类中");
 
       // NOTE(d1y): 不存在分类并且请求次数没有超过阈值
-      var needFetch = !currentHasCategoryer &&
+      var needFetch =
+          !currentHasCategoryer &&
           !cacheCategory.fetchCountAlreadyMax(currentMirrorItemId);
 
       if (needFetch) {
@@ -510,11 +510,7 @@ class HomeController extends GetxController
     bool notError = indexHomeLoadDataErrorMessage == "";
 
     // NOTE: 只会在 [isFirst] 后存入持久化缓存
-    MirrorStatusStack().pushStatus(
-      id,
-      notError,
-      canSave: isFirst,
-    );
+    MirrorStatusStack().pushStatus(id, notError, canSave: isFirst);
   }
 
   @override
@@ -532,18 +528,6 @@ class HomeController extends GetxController
   @override
   void didChangeMetrics() {
     updateWindowLastSize();
-  }
-
-  void switchTabview(TabSwitchDirection direction) {
-    if (currentBarIndex == 0 && direction == TabSwitchDirection.left) return;
-    if (currentBarIndex == 2 && direction == TabSwitchDirection.right) return;
-    if (direction == TabSwitchDirection.left) {
-      currentBarIndex--;
-    } else {
-      currentBarIndex++;
-    }
-    currentBarController.jumpToPage(currentBarIndex);
-    update();
   }
 
   void changeCurrentBarIndex(int i) {
@@ -611,9 +595,7 @@ class HomeController extends GetxController
               CupertinoDialogAction(
                 child: Text(
                   cancelText,
-                  style: const TextStyle(
-                    color: Colors.red,
-                  ),
+                  style: const TextStyle(color: Colors.red),
                 ),
                 onPressed: () {
                   Navigator.of(ctx).pop(false);
@@ -625,7 +607,7 @@ class HomeController extends GetxController
                 Navigator.of(ctx).pop(true);
               },
               child: Text(confirmText),
-            )
+            ),
           ],
         );
       },
@@ -684,11 +666,7 @@ class HomeController extends GetxController
           );
           break;
         }
-        await confirmAlert(
-          "视频源添加成功",
-          showCancel: false,
-          confirmText: "我知道了",
-        );
+        await confirmAlert("视频源添加成功", showCancel: false, confirmText: "我知道了");
 
         /// [SpiderManage.data] 中的顺序是 <扩展 + 内建>
         /// 所以当添加了源之后, 如果只有一个源的话(即当前添加的), 需要手动刷新一下
@@ -718,14 +696,11 @@ class HomeController extends GetxController
         }
         var flag = await confirmAlert("将添加订阅源: $realURL");
         if (!flag) break;
-        List<String> text =
-            getSettingAsKeyIdent(SettingsAllKey.mirrorTextarea).split("\n");
+        List<String> text = getSettingAsKeyIdent(
+          SettingsAllKey.mirrorTextarea,
+        ).split("\n");
         if (text.contains(realURL)) {
-          await confirmAlert(
-            "该订阅源已存在!",
-            showCancel: false,
-            confirmText: "我知道",
-          );
+          await confirmAlert("该订阅源已存在!", showCancel: false, confirmText: "我知道");
           break;
         }
         text.add(realURL);
