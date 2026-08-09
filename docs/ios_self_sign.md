@@ -5,7 +5,7 @@
 ## 环境
 
 - macOS 与完整 Xcode（只有 Command Line Tools 不够）
-- Flutter 3.35.7（版本写在 `.fvmrc`）
+- Flutter 3.44.9（版本写在 `.fvmrc`）
 - CocoaPods
 - Bun
 

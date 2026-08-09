@@ -6,7 +6,7 @@ project_root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$project_root"
 
 if ! command -v flutter >/dev/null 2>&1; then
-  echo "Flutter is required. This checkout is pinned to Flutter 3.35.7 in .fvmrc." >&2
+  echo "Flutter is required. This checkout is pinned to Flutter 3.44.9 in .fvmrc." >&2
   exit 1
 fi
 
