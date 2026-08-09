@@ -1,5 +1,6 @@
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:catmovie/shared/env.dart';
+import 'package:catmovie/shared/live_source_manage.dart';
 import 'package:catmovie/utils/boop.dart';
 import 'package:chinese_font_library/chinese_font_library.dart';
 import 'package:flutter/material.dart';
@@ -55,6 +56,7 @@ Future<ThemeMode> runBefore() async {
   await XHttp.init(enableLog: enableHttpLog);
   await IsarRepository().init();
   await SpiderManage.init();
+  await LiveSourceManage.init();
   await boop.init();
   await js2.init();
   registerAutoInjector();

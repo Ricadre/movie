@@ -1,0 +1,7 @@
+name: hide_cursor
+description: Cross-platform compatibility shim for CatMovie.
+version: 0.0.3
+publish_to: none
+
+environment:
+  sdk: '>=3.9.0 <4.0.0'

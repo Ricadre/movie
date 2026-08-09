@@ -26,7 +26,6 @@ import 'package:catmovie/app/modules/home/controllers/home_controller.dart';
 import 'package:catmovie/app/modules/home/views/parse_vip_manage.dart';
 import 'package:catmovie/app/widget/window_appbar.dart';
 import 'package:catmovie/widget/simple_html/flutter_html.dart';
-import 'package:haptic_feedback/haptic_feedback.dart';
 import 'package:isar_community/isar.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
@@ -40,10 +39,7 @@ import 'package:path/path.dart' as path;
 
 enum PlaylistSort { down, up }
 
-List<String> kDescEmptyList = [
-  "暂无简介",
-  "无简介",
-];
+List<String> kDescEmptyList = ["暂无简介", "无简介"];
 
 extension PlaylistSortExt on PlaylistSort {
   String get name {
@@ -148,11 +144,7 @@ class _PlayViewState extends State<PlayView> with AfterLayoutMixin {
           logLevel: logLevel,
         ),
       );
-      controller = VideoController(player!, onSpeedUpChanged: (flag) {
-        if (flag) {
-          boop.call(HapticsType.medium);
-        }
-      });
+      controller = VideoController(player!);
       if (player!.platform is NativePlayer) {
         var pp = player!.platform as NativePlayer;
         var temp = await _tempPath();
@@ -173,8 +165,9 @@ class _PlayViewState extends State<PlayView> with AfterLayoutMixin {
         .isNsfwEqualTo(home.isNsfw)
         .sidEqualTo(cx.id)
         .ctx((cx) {
-      return cx.detailIDEqualTo(item.id);
-    }).findFirstSync();
+          return cx.detailIDEqualTo(item.id);
+        })
+        .findFirstSync();
     if (play.historyContext == null) return;
     var tabIndex = play.historyContext!.ctx.pTabIndex;
     var index = play.historyContext!.ctx.pIndex;
@@ -262,8 +255,9 @@ class _PlayViewState extends State<PlayView> with AfterLayoutMixin {
                   Positioned.fill(
                     child: BackdropFilter(
                       filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-                      child:
-                          Container(color: Colors.white.withValues(alpha: .12)),
+                      child: Container(
+                        color: Colors.white.withValues(alpha: .12),
+                      ),
                     ),
                   ),
                 ],
@@ -275,7 +269,7 @@ class _PlayViewState extends State<PlayView> with AfterLayoutMixin {
               imageUrl: play.movieItem.smallCoverImage,
               fit: BoxFit.contain,
             ),
-          )
+          ),
         ],
       ),
     );
@@ -332,7 +326,6 @@ class _PlayViewState extends State<PlayView> with AfterLayoutMixin {
     Widget videoView = Video(
       fit: mediaKitFit,
       fill: Colors.black,
-      placeholder: showVideoCover ? _buildCoverImage() : null,
       controller: controller,
       onEnterFullscreen: () async {
         await defaultEnterNativeFullscreen();
@@ -347,12 +340,10 @@ class _PlayViewState extends State<PlayView> with AfterLayoutMixin {
       onExitFullscreen: () async {
         await defaultExitNativeFullscreen();
         if (GetPlatform.isIOS) {
-          SystemChrome.setPreferredOrientations(
-            [
-              DeviceOrientation.portraitUp,
-              DeviceOrientation.portraitDown,
-            ],
-          );
+          SystemChrome.setPreferredOrientations([
+            DeviceOrientation.portraitUp,
+            DeviceOrientation.portraitDown,
+          ]);
         }
       },
     );
@@ -439,6 +430,12 @@ class _PlayViewState extends State<PlayView> with AfterLayoutMixin {
         child: videoView,
       );
     }
+    if (showVideoCover) {
+      videoView = Stack(
+        fit: StackFit.expand,
+        children: [videoView, _buildCoverImage()],
+      );
+    }
     return Positioned.fill(child: videoView);
   }
 
@@ -468,10 +465,7 @@ class _PlayViewState extends State<PlayView> with AfterLayoutMixin {
             children: [
               Text(
                 "播放列表",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               Row(
                 mainAxisSize: MainAxisSize.min,
@@ -502,65 +496,64 @@ class _PlayViewState extends State<PlayView> with AfterLayoutMixin {
                       tooltip: "播放源",
                       onPressed: () {
                         showCupertinoModalBottomSheet(
-                            context: context,
-                            builder: (_) {
-                              return SizedBox(
-                                width: double.infinity,
-                                height: context.mediaQuery.size.height * .72,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(12.0),
-                                  child: Column(
-                                    spacing: 12,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Row(
-                                            spacing: 6,
-                                            children: [
-                                              SvgPicture.string(
-                                                r"""
+                          context: context,
+                          builder: (_) {
+                            return SizedBox(
+                              width: double.infinity,
+                              height: context.mediaQuery.size.height * .72,
+                              child: Padding(
+                                padding: const EdgeInsets.all(12.0),
+                                child: Column(
+                                  spacing: 12,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Row(
+                                          spacing: 6,
+                                          children: [
+                                            SvgPicture.string(
+                                              r"""
 <svg t="1758651075092" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="19790" width="200" height="200"><path d="M384.31 162.15c8.82 0 16 7.18 16 16v224c0 8.82-7.18 16-16 16h-224c-8.82 0-16-7.18-16-16v-224c0-8.82 7.18-16 16-16h224m0-64h-224c-44.18 0-80 35.82-80 80v224c0 44.18 35.82 80 80 80h224c44.18 0 80-35.82 80-80v-224c0-44.18-35.82-80-80-80zM383.79 607.69c8.82 0 16 7.18 16 16v224c0 8.82-7.18 16-16 16h-224c-8.82 0-16-7.18-16-16v-224c0-8.82 7.18-16 16-16h224m0-64h-224c-44.18 0-80 35.82-80 80v224c0 44.18 35.82 80 80 80h224c44.18 0 80-35.82 80-80v-224c0-44.18-35.82-80-80-80zM860.1 608c8.82 0 16 7.18 16 16v224c0 8.82-7.18 16-16 16h-224c-8.82 0-16-7.18-16-16V624c0-8.82 7.18-16 16-16h224m0-64h-224c-44.18 0-80 35.82-80 80v224c0 44.18 35.82 80 80 80h224c44.18 0 80-35.82 80-80V624c0-44.18-35.82-80-80-80zM912.21 113H585.22c-17.67 0-32 14.33-32 32s14.33 32 32 32h326.99c17.67 0 32-14.33 32-32s-14.32-32-32-32zM912.21 404H585.22c-17.67 0-32 14.33-32 32s14.33 32 32 32h326.99c17.67 0 32-14.33 32-32s-14.32-32-32-32zM910.18 258.5H583.19c-17.67 0-32 14.33-32 32s14.33 32 32 32h326.99c17.67 0 32-14.33 32-32s-14.32-32-32-32z" p-id="19791"></path><path d="M717 822.41c-12.14 0-24.3-4.19-34.02-12.6l-0.85-0.73-41.6-41.39c-12.53-12.46-12.58-32.73-0.12-45.25 12.46-12.53 32.73-12.58 45.25-0.12l31.88 31.72 90.49-79.12c13.3-11.63 33.52-10.28 45.15 3.03 11.63 13.3 10.28 33.52-3.03 45.15l-98.91 86.48c-9.7 8.54-21.96 12.83-34.24 12.83z m-7.89-61c-0.02 0.02-0.04 0.03-0.05 0.05l0.05-0.05z" p-id="19792"></path></svg>
 """,
-                                                width: 24,
-                                                height: 24,
-                                                colorFilter: ColorFilter.mode(
-                                                  context.isDarkMode
-                                                      ? Colors.white
-                                                      : Colors.black,
-                                                  BlendMode.srcIn,
-                                                ),
+                                              width: 24,
+                                              height: 24,
+                                              colorFilter: ColorFilter.mode(
+                                                context.isDarkMode
+                                                    ? Colors.white
+                                                    : Colors.black,
+                                                BlendMode.srcIn,
                                               ),
-                                              Text(
-                                                "选择播放源",
-                                                style: TextStyle(
-                                                    fontSize: 15,
-                                                    fontWeight:
-                                                        FontWeight.bold),
+                                            ),
+                                            Text(
+                                              "选择播放源",
+                                              style: TextStyle(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.bold,
                                               ),
-                                            ],
-                                          ),
-                                          IconButton(
-                                            onPressed: () {
-                                              Navigator.pop(context);
-                                            },
-                                            icon: Icon(Icons.close),
-                                          )
-                                        ],
-                                      ),
-                                      Expanded(
-                                          child: SizedBox(
+                                            ),
+                                          ],
+                                        ),
+                                        IconButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                          },
+                                          icon: Icon(Icons.close),
+                                        ),
+                                      ],
+                                    ),
+                                    Expanded(
+                                      child: SizedBox(
                                         width: double.infinity,
                                         child: SingleChildScrollView(
                                           child: Wrap(
                                             alignment: WrapAlignment.start,
                                             spacing: 9,
                                             runSpacing: 12,
-                                            children: playlist
-                                                .asMap()
-                                                .entries
-                                                .map((entry) {
+                                            children: playlist.asMap().entries.map((
+                                              entry,
+                                            ) {
                                               int index = entry.key;
                                               var item = entry.value;
                                               var isCurr =
@@ -573,31 +566,33 @@ class _PlayViewState extends State<PlayView> with AfterLayoutMixin {
                                                   ),
                                                   color: isCurr
                                                       ? (context.isDarkMode
-                                                              ? "#f1f1f1"
-                                                              : "#0f0f0f")
-                                                          .$color
+                                                                ? "#f1f1f1"
+                                                                : "#0f0f0f")
+                                                            .$color
                                                       : (context.isDarkMode
-                                                              ? '#272727'
-                                                              : "#e2e8f0")
-                                                          .$color,
-                                                  child: Text(item.title,
-                                                      style: TextStyle(
-                                                        fontSize: 14,
-                                                        color: isCurr
-                                                            ? (context
-                                                                    .isDarkMode
+                                                                ? '#272727'
+                                                                : "#e2e8f0")
+                                                            .$color,
+                                                  child: Text(
+                                                    item.title,
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                      color: isCurr
+                                                          ? (context.isDarkMode
                                                                 ? Colors.black
                                                                 : Colors.white)
-                                                            : Theme.of(context)
+                                                          : Theme.of(context)
                                                                 .textTheme
                                                                 .labelLarge!
                                                                 .color,
-                                                      )),
+                                                    ),
+                                                  ),
                                                   onPressed: () {
                                                     if (index !=
                                                         play.tabIndex) {
                                                       play.changeTabIndex(
-                                                          index);
+                                                        index,
+                                                      );
                                                       boop.selection();
                                                     }
                                                     Navigator.pop(context);
@@ -607,12 +602,14 @@ class _PlayViewState extends State<PlayView> with AfterLayoutMixin {
                                             }).toList(),
                                           ),
                                         ),
-                                      )),
-                                    ],
-                                  ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              );
-                            });
+                              ),
+                            );
+                          },
+                        );
                       },
                       icon: SvgPicture.string(
                         r"""
@@ -626,7 +623,7 @@ class _PlayViewState extends State<PlayView> with AfterLayoutMixin {
                         ),
                         fit: BoxFit.cover,
                       ),
-                    )
+                    ),
                 ],
               ),
             ],
@@ -635,137 +632,143 @@ class _PlayViewState extends State<PlayView> with AfterLayoutMixin {
         Expanded(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: offsetSize),
-            child: Builder(builder: (context) {
-              if (playlistIsEmpty) {
-                return emptyPlaylistWidget;
-              }
-              return GridView.builder(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: isLargeScreen ? 2 : playListGridCount,
-                  mainAxisExtent: 48,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                ),
-                itemCount: playlist[play.tabIndex].datas.length,
-                itemBuilder: (context, index) {
-                  var curr = playlist[play.tabIndex].datas[index];
-                  String playUrl = curr.url;
-                  var isCast =
-                      curr.type == VideoType.m3u8 || curr.type == VideoType.mp4;
-                  return Builder(builder: (menuContext) {
-                    return PullDownButton(
-                      itemBuilder: (context) {
-                        return [
-                          PullDownMenuItem(
-                            onTap: () async {
-                              await FlutterClipboard.copy(
-                                playUrl,
-                              );
-                              EasyLoading.showToast(
-                                "复制链接成功",
-                                maskType: EasyLoadingMaskType.none,
-                              );
-                            },
-                            title: '复制链接',
-                            icon: CupertinoIcons.doc_on_clipboard,
-                          ),
-                          if (isCast)
-                            PullDownMenuItem(
-                              title: '投屏播放',
-                              subtitle: '仅支持局域网里的设备',
-                              onTap: () {
-                                showCupertinoModalBottomSheet(
-                                    context: context,
-                                    backgroundColor: (context.isDarkMode
-                                            ? Colors.black
-                                            : Colors.white)
-                                        .withValues(alpha: .88),
-                                    builder: (
-                                      BuildContext context,
-                                    ) {
-                                      return CastScreen(
-                                        onTapDevice: (cx) async {
-                                          try {
-                                            await cx.setUrl(playUrl);
-                                            await cx.play();
-                                            // TODO: 支持控制远程DLNA设备
-                                            if (!context.mounted) {
-                                              return;
+            child: Builder(
+              builder: (context) {
+                if (playlistIsEmpty) {
+                  return emptyPlaylistWidget;
+                }
+                return GridView.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: isLargeScreen ? 2 : playListGridCount,
+                    mainAxisExtent: 48,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                  ),
+                  itemCount: playlist[play.tabIndex].datas.length,
+                  itemBuilder: (context, index) {
+                    var curr = playlist[play.tabIndex].datas[index];
+                    String playUrl = curr.url;
+                    var isCast =
+                        curr.type == VideoType.m3u8 ||
+                        curr.type == VideoType.mp4;
+                    return Builder(
+                      builder: (menuContext) {
+                        return PullDownButton(
+                          itemBuilder: (context) {
+                            return [
+                              PullDownMenuItem(
+                                onTap: () async {
+                                  await FlutterClipboard.copy(playUrl);
+                                  EasyLoading.showToast(
+                                    "复制链接成功",
+                                    maskType: EasyLoadingMaskType.none,
+                                  );
+                                },
+                                title: '复制链接',
+                                icon: CupertinoIcons.doc_on_clipboard,
+                              ),
+                              if (isCast)
+                                PullDownMenuItem(
+                                  title: '投屏播放',
+                                  subtitle: '仅支持局域网里的设备',
+                                  onTap: () {
+                                    showCupertinoModalBottomSheet(
+                                      context: context,
+                                      backgroundColor:
+                                          (context.isDarkMode
+                                                  ? Colors.black
+                                                  : Colors.white)
+                                              .withValues(alpha: .88),
+                                      builder: (BuildContext context) {
+                                        return CastScreen(
+                                          onTapDevice: (cx) async {
+                                            try {
+                                              await cx.setUrl(playUrl);
+                                              await cx.play();
+                                              // TODO: 支持控制远程DLNA设备
+                                              if (!context.mounted) {
+                                                return;
+                                              }
+                                              Navigator.of(context).pop();
+                                              EasyLoading.showToast(
+                                                "即将开始投屏播放",
+                                                toastPosition:
+                                                    EasyLoadingToastPosition
+                                                        .bottom,
+                                                duration: Duration(
+                                                  milliseconds: 240,
+                                                ),
+                                              );
+                                            } catch (e) {
+                                              EasyLoading.showToast(
+                                                "播放失败",
+                                                toastPosition:
+                                                    EasyLoadingToastPosition
+                                                        .bottom,
+                                                duration: Duration(
+                                                  milliseconds: 240,
+                                                ),
+                                              );
                                             }
-                                            Navigator.of(context).pop();
-                                            EasyLoading.showToast(
-                                              "即将开始投屏播放",
-                                              toastPosition:
-                                                  EasyLoadingToastPosition
-                                                      .bottom,
-                                              duration:
-                                                  Duration(milliseconds: 240),
-                                            );
-                                          } catch (e) {
-                                            EasyLoading.showToast(
-                                              "播放失败",
-                                              toastPosition:
-                                                  EasyLoadingToastPosition
-                                                      .bottom,
-                                              duration:
-                                                  Duration(milliseconds: 240),
-                                            );
-                                          }
-                                        },
-                                      );
-                                    });
-                              },
-                              icon: CupertinoIcons.tv,
-                            ),
-                        ];
-                      },
-                      buttonBuilder: (context, showMenu) {
-                        return HoverCursor(
-                          child: CupertinoButton.filled(
-                            color: (context.isDarkMode ? '#222222' : '#f4e8f8')
-                                .$color,
-                            padding: EdgeInsets.zero,
-                            child: Builder(builder: (cx) {
-                              var text = curr.name;
-                              var ps = play.playState;
-                              var lastedPlay = ps.tabIndex == play.tabIndex &&
-                                  index == ps.index;
-                              var textColor = context.isDarkMode
-                                  ? Colors.white
-                                  : Colors.black;
-                              if (lastedPlay) {
-                                text += "\n(上次播放)";
-                                textColor = Color(0xFF6750A4);
-                              }
-                              return Text(
-                                text,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: textColor,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
+                                          },
+                                        );
+                                      },
+                                    );
+                                  },
+                                  icon: CupertinoIcons.tv,
                                 ),
-                              );
-                            }),
-                            onPressed: () {
-                              boop.selection();
-                              handlePlay(
-                                play.tabIndex,
-                                index,
-                              );
-                            },
-                            onLongPress: () {
-                              showMenu();
-                              boop.success();
-                            },
-                          ),
+                            ];
+                          },
+                          buttonBuilder: (context, showMenu) {
+                            return HoverCursor(
+                              child: CupertinoButton.filled(
+                                color:
+                                    (context.isDarkMode ? '#222222' : '#f4e8f8')
+                                        .$color,
+                                padding: EdgeInsets.zero,
+                                child: Builder(
+                                  builder: (cx) {
+                                    var text = curr.name;
+                                    var ps = play.playState;
+                                    var lastedPlay =
+                                        ps.tabIndex == play.tabIndex &&
+                                        index == ps.index;
+                                    var textColor = context.isDarkMode
+                                        ? Colors.white
+                                        : Colors.black;
+                                    if (lastedPlay) {
+                                      text += "\n(上次播放)";
+                                      textColor = Color(0xFF6750A4);
+                                    }
+                                    return Text(
+                                      text,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        color: textColor,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    );
+                                  },
+                                ),
+                                onPressed: () {
+                                  boop.selection();
+                                  handlePlay(play.tabIndex, index);
+                                },
+                                onLongPress: () {
+                                  showMenu();
+                                  boop.success();
+                                },
+                              ),
+                            );
+                          },
                         );
                       },
                     );
-                  });
-                },
-              );
-            }),
+                  },
+                );
+              },
+            ),
           ),
         ),
       ],
@@ -782,8 +785,9 @@ class _PlayViewState extends State<PlayView> with AfterLayoutMixin {
     var sep = Container(
       width: 1,
       height: double.infinity,
-      color: (context.isDarkMode ? Colors.white : Colors.black)
-          .withValues(alpha: .12),
+      color: (context.isDarkMode ? Colors.white : Colors.black).withValues(
+        alpha: .12,
+      ),
     );
     Widget body = Flex(
       direction: isLargeScreen ? Axis.horizontal : Axis.vertical,
@@ -796,10 +800,7 @@ class _PlayViewState extends State<PlayView> with AfterLayoutMixin {
     double topbarHeight = GetPlatform.isDesktop ? 56 : 48;
     return Stack(
       children: [
-        Positioned.fill(
-          top: topbarHeight,
-          child: body,
-        ),
+        Positioned.fill(top: topbarHeight, child: body),
         Positioned(
           left: 0,
           top: 0,
@@ -823,8 +824,9 @@ class _PlayViewState extends State<PlayView> with AfterLayoutMixin {
                       children: [
                         Positioned.fill(
                           child: Container(
-                            padding: EdgeInsets.symmetric(vertical: 12)
-                                .copyWith(right: 24),
+                            padding: EdgeInsets.symmetric(
+                              vertical: 12,
+                            ).copyWith(right: 24),
                             child: Row(
                               spacing: 6,
                               mainAxisSize: MainAxisSize.max,
@@ -839,9 +841,10 @@ class _PlayViewState extends State<PlayView> with AfterLayoutMixin {
                                         .textTheme
                                         .titleMedium
                                         ?.copyWith(
-                                            color: context.isDarkMode
-                                                ? Colors.white
-                                                : Colors.black),
+                                          color: context.isDarkMode
+                                              ? Colors.white
+                                              : Colors.black,
+                                        ),
                                     overflow: TextOverflow.ellipsis,
                                     maxLines: 1,
                                   ),
@@ -882,17 +885,12 @@ class _PlayViewState extends State<PlayView> with AfterLayoutMixin {
                   if (canBeShowParseVipButton)
                     Zoom(
                       child: CupertinoButton(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6.0,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 6.0),
                         child: const Row(
                           children: [
                             Icon(CupertinoIcons.collections, size: 16),
                             SizedBox(width: 6.0),
-                            Text(
-                              "解析源",
-                              style: TextStyle(fontSize: 14.0),
-                            ),
+                            Text("解析源", style: TextStyle(fontSize: 14.0)),
                             SizedBox(width: 2.0),
                           ],
                         ),
@@ -984,7 +982,7 @@ class _PlayViewState extends State<PlayView> with AfterLayoutMixin {
                           size: 88,
                           colors: [
                             Color(0xffc2e59c).withValues(alpha: .24),
-                            Color(0xff64b3f4).withValues(alpha: .24)
+                            Color(0xff64b3f4).withValues(alpha: .24),
                           ],
                           blur: 88,
                         ),
@@ -1004,9 +1002,7 @@ class _PlayViewState extends State<PlayView> with AfterLayoutMixin {
   final Style _textOncelineStyle = Style(
     textOverflow: TextOverflow.ellipsis,
     maxLines: 1,
-    fontSize: const FontSize(
-      12,
-    ),
+    fontSize: const FontSize(12),
     height: 24,
   );
 
@@ -1045,10 +1041,7 @@ class _PlayViewState extends State<PlayView> with AfterLayoutMixin {
         ),
       );
     }
-    return Html(
-      data: humanDesc,
-      style: _shortDescStyleWithHTML,
-    );
+    return Html(data: humanDesc, style: _shortDescStyleWithHTML);
   }
 
   Widget get _buildWithDesc {
@@ -1080,19 +1073,12 @@ class _PlayViewState extends State<PlayView> with AfterLayoutMixin {
         ),
         children: [
           ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: screenHeight * .33,
-            ),
+            constraints: BoxConstraints(maxHeight: screenHeight * .33),
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 8,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: SingleChildScrollView(
                 controller: ScrollController(),
-                child: Html(
-                  data: desc,
-                ),
+                child: Html(data: desc),
               ),
             ),
           ),
@@ -1113,10 +1099,7 @@ class _PlayViewState extends State<PlayView> with AfterLayoutMixin {
             size: 42,
             color: CupertinoColors.systemBlue,
           ),
-          Text(
-            "暂无播放链接",
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
+          Text("暂无播放链接", style: Theme.of(context).textTheme.bodySmall),
         ],
       ),
     );
@@ -1198,9 +1181,7 @@ class _MediaKitPlaylistState extends State<MediaKitPlaylist>
     return Container(
       width: widget.width,
       height: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: .72),
-      ),
+      decoration: BoxDecoration(color: Colors.black.withValues(alpha: .72)),
       child: ClipRRect(
         child: Stack(
           children: [
@@ -1236,15 +1217,19 @@ class _MediaKitPlaylistState extends State<MediaKitPlaylist>
                           children: [
                             Text(
                               "选集",
-                              style:
-                                  TextStyle(fontSize: 16, color: Colors.white),
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.white,
+                              ),
                             ),
                             Opacity(
                               opacity: .68,
                               child: Text(
                                 "(共${list.length}集)",
                                 style: TextStyle(
-                                    fontSize: 14, color: Colors.white),
+                                  fontSize: 14,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                           ],

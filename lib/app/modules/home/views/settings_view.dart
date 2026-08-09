@@ -21,6 +21,7 @@ import 'package:catmovie/app/modules/home/views/source_help.dart';
 import 'package:catmovie/app/shared/bus.dart';
 import 'package:catmovie/git_info.dart';
 import 'package:catmovie/shared/enum.dart';
+import 'package:catmovie/shared/live_source_manage.dart';
 import 'package:catmovie/shared/manage.dart';
 import 'package:catmovie/app/modules/home/views/cupertino_license.dart';
 import 'package:pull_down_button/pull_down_button.dart';
@@ -39,7 +40,7 @@ enum GetBackResultType {
   fail,
 
   /// 成功
-  success
+  success,
 }
 
 enum HandleDiglogTapType {
@@ -132,12 +133,14 @@ class _SettingsViewState extends State<SettingsView>
   @override
   void initState() {
     setState(() {
-      var themeMode =
-          getSettingAsKeyIdent<SystemThemeMode>(SettingsAllKey.themeMode);
+      var themeMode = getSettingAsKeyIdent<SystemThemeMode>(
+        SettingsAllKey.themeMode,
+      );
       _isDark = themeMode.isDark;
       _autoDarkMode = themeMode.isSytem;
-      _videoKernel =
-          getSettingAsKeyIdent<VideoKernel>(SettingsAllKey.videoKernel);
+      _videoKernel = getSettingAsKeyIdent<VideoKernel>(
+        SettingsAllKey.videoKernel,
+      );
       _mirrorLength = SpiderManage.data.length;
       // var __hapticFeedback = getSettingAsKeyIdent<bool>(
       //   SettingsAllKey.hapticFeedback,
@@ -181,8 +184,9 @@ class _SettingsViewState extends State<SettingsView>
   }
 
   void addMirrorMangerTextareaLister() {
-    editingControllerValue =
-        getSettingAsKeyIdent<String>(SettingsAllKey.mirrorTextarea);
+    editingControllerValue = getSettingAsKeyIdent<String>(
+      SettingsAllKey.mirrorTextarea,
+    );
     _lines = editingControllerValue;
     _editingController.addListener(() {
       _lines = editingControllerValue;
@@ -272,23 +276,29 @@ class _SettingsViewState extends State<SettingsView>
         Get.dialog(
           GestureDetector(
             behavior: HitTestBehavior.opaque,
-            child: Center(
-              child: kActivityIndicator,
-            ),
+            child: Center(child: kActivityIndicator),
           ),
           barrierColor: CupertinoColors.black.withValues(alpha: .9),
         );
-        var data = await SourceUtils.runTaks(target);
+        final liveSources = <LiveSourceConfig>[];
+        var data = await SourceUtils.runTaks(
+          target,
+          onDocument: (_, rawData) {
+            liveSources.addAll(LiveSourceManage.parse(rawData));
+          },
+        );
         Get.back();
-        if (data.isEmpty) {
+        if (data.isEmpty && liveSources.isEmpty) {
           EasyLoading.showError("获取的内容为空!");
           boop.error();
           return;
         }
+        await LiveSourceManage.replace(liveSources);
         SpiderManage.extend.clear();
         SpiderManage.extend.addAll(data);
         SpiderManage.saveToCache(SpiderManage.extend);
-        var showMessage = "已同步成功(${data.length}个源)!";
+        var showMessage =
+            "已同步成功(${data.length}个视频源, ${liveSources.length}个直播源)!";
         updateSetting(SettingsAllKey.onBoardingShowed, true);
         EasyLoading.showSuccess(showMessage);
         _mirrorLength = data.length;
@@ -349,9 +359,10 @@ class _SettingsViewState extends State<SettingsView>
   }
 
   void handleSourceHelp() {
-    var cx = getSettingAsKeyIdent<String>(SettingsAllKey.mirrorTextarea,
-            defaultValue: "")
-        .trim();
+    var cx = getSettingAsKeyIdent<String>(
+      SettingsAllKey.mirrorTextarea,
+      defaultValue: "",
+    ).trim();
     if (cx.isNotEmpty && cx != editingControllerValue) {
       editingControllerValue = cx;
     }
@@ -432,10 +443,11 @@ class _SettingsViewState extends State<SettingsView>
                               width: 24,
                               height: 24,
                               colorFilter: ColorFilter.mode(
-                                  context.isDarkMode
-                                      ? Colors.white
-                                      : Colors.black,
-                                  BlendMode.srcIn),
+                                context.isDarkMode
+                                    ? Colors.white
+                                    : Colors.black,
+                                BlendMode.srcIn,
+                              ),
                             ),
                             onPressed: () {
                               handleDiglogTap(HandleDiglogTapType.clean);
@@ -452,10 +464,11 @@ class _SettingsViewState extends State<SettingsView>
                               width: 24,
                               height: 24,
                               colorFilter: ColorFilter.mode(
-                                  context.isDarkMode
-                                      ? Colors.white
-                                      : Colors.black,
-                                  BlendMode.srcIn),
+                                context.isDarkMode
+                                    ? Colors.white
+                                    : Colors.black,
+                                BlendMode.srcIn,
+                              ),
                             ),
                             onPressed: () {
                               boop.selection();
@@ -477,8 +490,9 @@ class _SettingsViewState extends State<SettingsView>
                         controller: _editingController,
                         maxLines: 32,
                         style: TextStyle(
-                          color:
-                              context.isDarkMode ? Colors.white : Colors.black,
+                          color: context.isDarkMode
+                              ? Colors.white
+                              : Colors.black,
                           fontSize: 14,
                         ),
                         decoration: InputDecoration.collapsed(
@@ -505,12 +519,7 @@ class _SettingsViewState extends State<SettingsView>
         content: const Text("将删除所有缓存, 包括视频源和一些设置"),
         actions: <CupertinoDialogAction>[
           CupertinoDialogAction(
-            child: const Text(
-              '我想想',
-              style: TextStyle(
-                color: Colors.red,
-              ),
-            ),
+            child: const Text('我想想', style: TextStyle(color: Colors.red)),
             onPressed: () {
               boop.selection();
               Get.back();
@@ -522,10 +531,7 @@ class _SettingsViewState extends State<SettingsView>
               Get.back();
               handleCleanCache();
             },
-            child: const Text(
-              '确定',
-              style: TextStyle(color: Colors.blue),
-            ),
+            child: const Text('确定', style: TextStyle(color: Colors.blue)),
           ),
         ],
       ),
@@ -606,10 +612,12 @@ class _SettingsViewState extends State<SettingsView>
         behavior: ScrollBehavior().copyWith(scrollbars: false),
         child: SettingsList(
           applicationType: ApplicationType.cupertino,
-          lightTheme:
-              SettingsThemeData(settingsListBackground: Colors.transparent),
-          darkTheme:
-              SettingsThemeData(settingsListBackground: Colors.transparent),
+          lightTheme: SettingsThemeData(
+            settingsListBackground: Colors.transparent,
+          ),
+          darkTheme: SettingsThemeData(
+            settingsListBackground: Colors.transparent,
+          ),
           sections: [
             SettingsSection(
               title: Text('常规设置'),
@@ -642,9 +650,13 @@ class _SettingsViewState extends State<SettingsView>
                   },
                   initialValue: autoDarkMode,
                   // leading: Icon(CupertinoIcons.moon_stars_fill),
-                  leading: leadingIcon(r"""
+                  leading: leadingIcon(
+                    r"""
 <svg t="1758654465566" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="8017" width="200" height="200"><path d="M900.3008 597.2992a46.9504 46.9504 0 0 0-47.0016-46.8992H768a46.8992 46.8992 0 0 0-46.848 46.8992v256c0 25.9072 20.992 46.9504 46.848 46.9504h85.3504c25.9584 0 47.0016-20.992 47.0016-46.9504v-256z m-170.752-256V256a46.9504 46.9504 0 0 0-46.848-46.9504h-512A46.9504 46.9504 0 0 0 123.7504 256v298.6496a46.9504 46.9504 0 0 0 46.9504 46.9504H512a38.4 38.4 0 0 1 0 76.8h-46.8992v93.8496H512a38.4 38.4 0 0 1 0 76.8H298.6496a38.4 38.4 0 0 1 0-76.8h89.6V678.4h-217.6a123.8016 123.8016 0 0 1-123.6992-123.7504V256a123.7504 123.7504 0 0 1 123.7504-123.7504h512A123.8016 123.8016 0 0 1 806.2976 256v85.2992a38.4 38.4 0 0 1-76.8 0z m247.552 512a123.7504 123.7504 0 0 1-123.8016 123.7504H768a123.7504 123.7504 0 0 1-123.648-123.7504v-256a123.6992 123.6992 0 0 1 123.648-123.6992h85.3504a123.7504 123.7504 0 0 1 123.8016 123.6992v256z" p-id="8018"></path></svg>
-""", width: 25, height: 25),
+""",
+                    width: 25,
+                    height: 25,
+                  ),
                   title: Text('跟随系统主题'),
                 ),
                 if (false)
@@ -661,10 +673,7 @@ class _SettingsViewState extends State<SettingsView>
                     value: SimpleTag(text: parseVipListWithText),
                   ),
                 SettingsTile.navigation(
-                  leading: Icon(
-                    CupertinoIcons.cube_box,
-                    size: 24,
-                  ),
+                  leading: Icon(CupertinoIcons.cube_box, size: 24),
                   title: Text('视频源管理'),
                   onPressed: (cx) {
                     EasyLoading.dismiss();
@@ -680,8 +689,9 @@ class _SettingsViewState extends State<SettingsView>
                     final RenderBox renderBox =
                         kVideoKernelBtnKey.currentContext!.findRenderObject()
                             as RenderBox;
-                    final Offset btnPosition =
-                        renderBox.localToGlobal(Offset.zero);
+                    final Offset btnPosition = renderBox.localToGlobal(
+                      Offset.zero,
+                    );
                     final Size btnSize = renderBox.size;
                     final double targetHeight = btnSize.height;
                     final Rect targetRect = Rect.fromLTWH(
@@ -847,35 +857,35 @@ class Copyright extends AbstractSettingsTile {
       padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: theme.themeData.settingsSectionBackground,
-        borderRadius: BorderRadius.vertical(
-          bottom: Radius.circular(12),
-        ),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(12)),
       ),
       child: GestureDetector(
         onTap: () {
           onTap?.call();
         },
-        child: Builder(builder: (context) {
-          var firstWriteYear = '2020';
-          String currentYearString = DateTime.now().year.toString();
-          var text = "© 小猫影视 ";
-          text += "$firstWriteYear-$currentYearString ";
-          text += "$gitTag($gitCommit)";
-          return HoverCursor(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                text,
-                // textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: (Get.isDarkMode ? Colors.white : Colors.black)
-                      .withValues(alpha: .42),
+        child: Builder(
+          builder: (context) {
+            var firstWriteYear = '2020';
+            String currentYearString = DateTime.now().year.toString();
+            var text = "© 小猫影视 ";
+            text += "$firstWriteYear-$currentYearString ";
+            text += "$gitTag($gitCommit)";
+            return HoverCursor(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  text,
+                  // textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: (Get.isDarkMode ? Colors.white : Colors.black)
+                        .withValues(alpha: .42),
+                  ),
                 ),
               ),
-            ),
-          );
-        }),
+            );
+          },
+        ),
       ),
     );
   }
@@ -892,18 +902,13 @@ class SimpleTag extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(6),
         border: Border.all(
-          color: (context.isDarkMode ? Colors.white : Colors.black)
-              .withValues(alpha: .42),
+          color: (context.isDarkMode ? Colors.white : Colors.black).withValues(
+            alpha: .42,
+          ),
         ),
       ),
-      padding: EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 3,
-      ),
-      child: Text(
-        text,
-        style: TextStyle(fontSize: 14),
-      ),
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+      child: Text(text, style: TextStyle(fontSize: 14)),
     );
   }
 }

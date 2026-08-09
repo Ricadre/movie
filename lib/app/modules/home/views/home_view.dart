@@ -29,21 +29,9 @@ class HomeView extends GetView<HomeController> {
   ];
 
   final List<Map<String, dynamic>> _tabs = [
-    {
-      "icon": CupertinoIcons.home,
-      "title": "首页",
-      "color": Colors.blue,
-    },
-    {
-      "icon": CupertinoIcons.tv,
-      "title": "电视",
-      "color": Colors.orange,
-    },
-    {
-      "icon": CupertinoIcons.settings,
-      "title": "设置",
-      "color": Colors.pink,
-    },
+    {"icon": CupertinoIcons.home, "title": "首页", "color": Colors.blue},
+    {"icon": CupertinoIcons.tv, "title": "电视", "color": Colors.orange},
+    {"icon": CupertinoIcons.settings, "title": "设置", "color": Colors.pink},
   ];
 
   List<ISpiderAdapter> get mirror => controller.mirrorList;
@@ -74,15 +62,6 @@ class HomeView extends GetView<HomeController> {
             showInstructions: false,
           ),
         ),
-        onTabSwitch: controller.switchTabview,
-        onClose: () {
-          if (homeview.currentBarIndex == 0) {
-            Future.delayed(const Duration(milliseconds: 100), () {
-              controller.focusNode.requestFocus();
-              controller.homeFocusNode.requestFocus();
-            });
-          }
-        },
         actions: [
           CommandPaletteAction.nested(
             label: "切换镜像",
@@ -112,10 +91,11 @@ class HomeView extends GetView<HomeController> {
                   : SystemThemeMode.light;
               updateSetting(SettingsAllKey.themeMode, newTheme);
               Get.changeThemeMode(
-                  !context.isDarkMode ? ThemeMode.dark : ThemeMode.light);
+                !context.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+              );
               controller.update();
             },
-          )
+          ),
         ],
         child: Scaffold(
           backgroundColor: Colors.transparent,
@@ -126,7 +106,7 @@ class HomeView extends GetView<HomeController> {
                   size: 88,
                   colors: [
                     Color(0xffc2e59c).withValues(alpha: .24),
-                    Color(0xff64b3f4).withValues(alpha: .24)
+                    Color(0xff64b3f4).withValues(alpha: .24),
                   ],
                   blur: 42,
                 ),
@@ -193,9 +173,7 @@ class HomeView extends GetView<HomeController> {
                           filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
                           child: Center(
                             child: ConstrainedBox(
-                              constraints: const BoxConstraints(
-                                maxWidth: 360,
-                              ),
+                              constraints: const BoxConstraints(maxWidth: 360),
                               child: SalomonBottomBar(
                                 itemPadding: const EdgeInsets.symmetric(
                                   vertical: 9,

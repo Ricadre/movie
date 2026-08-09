@@ -77,7 +77,7 @@ packages:
     dependency: "direct main"
     description:
       path: bitsdojo_window
-      ref: HEAD
+      ref: "978d1eea0097a43dfcd89efe98cfef67ad2cd0da"
       resolved-ref: "978d1eea0097a43dfcd89efe98cfef67ad2cd0da"
       url: "https://github.com/bitsdojo/bitsdojo_window"
     source: git
@@ -230,10 +230,10 @@ packages:
     dependency: transitive
     description:
       name: characters
-      sha256: f71061c654a3380576a52b451dd5532377954cf9dbd272a78fc8479606670803
+      sha256: faf38497bda5ead2a8c7615f4f7939df04333478bf32e4173fcb06d428b5716b
       url: "https://pub.dev"
     source: hosted
-    version: "1.4.0"
+    version: "1.4.1"
   checked_yaml:
     dependency: transitive
     description:
@@ -301,11 +301,10 @@ packages:
   command_palette:
     dependency: "direct main"
     description:
-      path: "."
-      ref: c9cf207fccd07ecaa6de0f7ea898046ffa26ff3a
-      resolved-ref: c9cf207fccd07ecaa6de0f7ea898046ffa26ff3a
-      url: "https://github.com/d1y/command_palette"
-    source: git
+      name: command_palette
+      sha256: b15a9befccdc1fd0fa9c40e8c6449ccd8d4784b57916bb62e8a4b4a7fb398dbf
+      url: "https://pub.dev"
+    source: hosted
     version: "0.7.6"
   concurrent_queue:
     dependency: "direct main"
@@ -414,12 +413,11 @@ packages:
   desktop_webview_window:
     dependency: "direct main"
     description:
-      path: "packages/desktop_webview_window"
-      ref: b8b90776e769e23e27198c297d88246a13b4e75a
-      resolved-ref: b8b90776e769e23e27198c297d88246a13b4e75a
-      url: "https://github.com/waifu-project/flutter-plugins"
-    source: git
-    version: "0.2.4"
+      name: desktop_webview_window
+      sha256: b6fdae2cbf9571879b1761c12f27facaf82e22d0bdc74d049907c2a09a432957
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.0"
   dio:
     dependency: "direct main"
     description:
@@ -431,12 +429,11 @@ packages:
   dio_cache_interceptor:
     dependency: transitive
     description:
-      path: dio_cache_interceptor
-      ref: HEAD
-      resolved-ref: ff0f4e113e4dc54e07be357cd747af26b33b4d6b
-      url: "https://github.com/waifu-project/dart_http_cache"
-    source: git
-    version: "4.0.3"
+      name: dio_cache_interceptor
+      sha256: "9472f9f3dcaa384ae68e60606c1d04e6314dea5eab39f18d94ff9b0a300dbbe4"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.0.7"
   dio_cookie_manager:
     dependency: transitive
     description:
@@ -493,6 +490,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.5"
+  fake_async:
+    dependency: transitive
+    description:
+      name: fake_async
+      sha256: "5368f224a74523e8d2e7399ea1638b37aecfca824a3cc4dfdf77bf1fa905ac44"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.3.3"
   fast_gbk:
     dependency: transitive
     description:
@@ -566,7 +571,7 @@ packages:
     dependency: transitive
     description:
       path: "."
-      ref: HEAD
+      ref: a9b2f6b8625d40da707c73048f368b81ec6fb392
       resolved-ref: a9b2f6b8625d40da707c73048f368b81ec6fb392
       url: "https://github.com/yhsj0919/flutter_js"
     source: git
@@ -623,7 +628,7 @@ packages:
     dependency: "direct dev"
     description:
       path: "."
-      ref: HEAD
+      ref: "40ce43ad63452703939a07449ceb338f0a29a67c"
       resolved-ref: "40ce43ad63452703939a07449ceb338f0a29a67c"
       url: "https://github.com/Dhanabhon/flutter_launcher_name"
     source: git
@@ -668,6 +673,11 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.1"
+  flutter_test:
+    dependency: "direct dev"
+    description: flutter
+    source: sdk
+    version: "0.0.0"
   flutter_web_plugins:
     dependency: transitive
     description: flutter
@@ -716,11 +726,9 @@ packages:
   hide_cursor:
     dependency: "direct main"
     description:
-      path: "."
-      ref: "33643d93803c09455445389ad57b1da880cd04aa"
-      resolved-ref: "33643d93803c09455445389ad57b1da880cd04aa"
-      url: "https://github.com/waifu-project/hide_cursor"
-    source: git
+      path: "packages/hide_cursor"
+      relative: true
+    source: path
     version: "0.0.3"
   highlight:
     dependency: transitive
@@ -758,18 +766,10 @@ packages:
     dependency: transitive
     description:
       name: http_cache_core
-      sha256: b0accfa821e73085b5252dd42a6908d19ea0c29badd46db3668af6f8e510cfe1
+      sha256: d6de4ca6680e70f4eacd79e073d6a73734eb1da86305409e495adfabf404eddf
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.1"
-  http_methods:
-    dependency: transitive
-    description:
-      name: http_methods
-      sha256: "6bccce8f1ec7b5d701e7921dca35e202d425b57e317ba1a37f2638590e29e566"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.1.1"
+    version: "1.1.4"
   http_multi_server:
     dependency: transitive
     description:
@@ -858,6 +858,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.0.3"
+  leak_tracker:
+    dependency: transitive
+    description:
+      name: leak_tracker
+      sha256: "33e2e26bdd85a0112ec15400c8cbffea70d0f9c3407491f672a2fad47915e2de"
+      url: "https://pub.dev"
+    source: hosted
+    version: "11.0.2"
+  leak_tracker_flutter_testing:
+    dependency: transitive
+    description:
+      name: leak_tracker_flutter_testing
+      sha256: "1dbc140bb5a23c75ea9c4811222756104fbcd1a27173f0c34ca01e16bea473c1"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.10"
+  leak_tracker_testing:
+    dependency: transitive
+    description:
+      name: leak_tracker_testing
+      sha256: "8d5a2d49f4a66b49744b23b018848400d23e54caf9463f4eb20df3eb8acb2eb1"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.2"
   lints:
     dependency: transitive
     description:
@@ -894,23 +918,23 @@ packages:
     dependency: transitive
     description:
       name: matcher
-      sha256: dc58c723c3c24bf8d3e2d3ad3f2f9d7bd9cf43ec6feaa64181775e60190153f2
+      sha256: dc0b7dc7651697ea4ff3e69ef44b0407ea32c487a39fff6a4004fa585e901861
       url: "https://pub.dev"
     source: hosted
-    version: "0.12.17"
+    version: "0.12.19"
   material_color_utilities:
     dependency: transitive
     description:
       name: material_color_utilities
-      sha256: f7142bb1154231d7ea5f96bc7bde4bda2a0945d2806bb11670e30b850d56bdec
+      sha256: "9c337007e82b1889149c82ed242ed1cb24a66044e30979c44912381e9be4c48b"
       url: "https://pub.dev"
     source: hosted
-    version: "0.11.1"
+    version: "0.13.0"
   media_kit:
     dependency: "direct main"
     description:
       path: media_kit
-      ref: main
+      ref: ad84c59faa2b871926cb31516bdeec65d7676884
       resolved-ref: ad84c59faa2b871926cb31516bdeec65d7676884
       url: "https://github.com/Predidit/media-kit.git"
     source: git
@@ -919,7 +943,7 @@ packages:
     dependency: "direct overridden"
     description:
       path: "libs/android/media_kit_libs_android_video"
-      ref: main
+      ref: ad84c59faa2b871926cb31516bdeec65d7676884
       resolved-ref: ad84c59faa2b871926cb31516bdeec65d7676884
       url: "https://github.com/Predidit/media-kit.git"
     source: git
@@ -928,7 +952,7 @@ packages:
     dependency: "direct overridden"
     description:
       path: "libs/ios/media_kit_libs_ios_video"
-      ref: main
+      ref: ad84c59faa2b871926cb31516bdeec65d7676884
       resolved-ref: ad84c59faa2b871926cb31516bdeec65d7676884
       url: "https://github.com/Predidit/media-kit.git"
     source: git
@@ -937,7 +961,7 @@ packages:
     dependency: "direct overridden"
     description:
       path: "libs/linux/media_kit_libs_linux"
-      ref: main
+      ref: ad84c59faa2b871926cb31516bdeec65d7676884
       resolved-ref: ad84c59faa2b871926cb31516bdeec65d7676884
       url: "https://github.com/Predidit/media-kit.git"
     source: git
@@ -946,7 +970,7 @@ packages:
     dependency: "direct overridden"
     description:
       path: "libs/macos/media_kit_libs_macos_video"
-      ref: main
+      ref: ad84c59faa2b871926cb31516bdeec65d7676884
       resolved-ref: ad84c59faa2b871926cb31516bdeec65d7676884
       url: "https://github.com/Predidit/media-kit.git"
     source: git
@@ -955,7 +979,7 @@ packages:
     dependency: "direct main"
     description:
       path: "libs/universal/media_kit_libs_video"
-      ref: main
+      ref: ad84c59faa2b871926cb31516bdeec65d7676884
       resolved-ref: ad84c59faa2b871926cb31516bdeec65d7676884
       url: "https://github.com/Predidit/media-kit.git"
     source: git
@@ -964,7 +988,7 @@ packages:
     dependency: "direct overridden"
     description:
       path: "libs/windows/media_kit_libs_windows_video"
-      ref: main
+      ref: ad84c59faa2b871926cb31516bdeec65d7676884
       resolved-ref: ad84c59faa2b871926cb31516bdeec65d7676884
       url: "https://github.com/Predidit/media-kit.git"
     source: git
@@ -973,19 +997,19 @@ packages:
     dependency: "direct main"
     description:
       path: media_kit_video
-      ref: main
-      resolved-ref: "9058821c6a07a0e7724bb18c134c5517d5bb2d09"
-      url: "https://github.com/waifu-project/media-kit.git"
+      ref: ad84c59faa2b871926cb31516bdeec65d7676884
+      resolved-ref: ad84c59faa2b871926cb31516bdeec65d7676884
+      url: "https://github.com/Predidit/media-kit.git"
     source: git
     version: "1.2.5"
   meta:
     dependency: transitive
     description:
       name: meta
-      sha256: e3641ec5d63ebf0d9b41bd43201a66e3fc79a65db5f61fc181f04cd27aab950c
+      sha256: "1741988757a65eb6b36abe716829688cf01910bbf91c34354ff7ec1c3de2b349"
       url: "https://pub.dev"
     source: hosted
-    version: "1.16.0"
+    version: "1.18.0"
   mime:
     dependency: transitive
     description:
@@ -1378,14 +1402,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.2"
-  shelf_router:
-    dependency: transitive
-    description:
-      name: shelf_router
-      sha256: f5e5d492440a7fb165fe1e2e1a623f31f734d3370900070b2b1e0d0428d59864
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.1.4"
   shelf_web_socket:
     dependency: transitive
     description:
@@ -1410,7 +1426,7 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: main
+      ref: "2770c25f253a698da809fea9a7e2dd17012ed752"
       resolved-ref: "2770c25f253a698da809fea9a7e2dd17012ed752"
       url: "https://github.com/dridino/smooth_list_view"
     source: git
@@ -1547,10 +1563,10 @@ packages:
     dependency: transitive
     description:
       name: test_api
-      sha256: ab2726c1a94d3176a45960b6234466ec367179b87dd74f1611adb1f3b5fb9d55
+      sha256: "949a932224383300f01be9221c39180316445ecb8e7547f70a41a35bf421fb9e"
       url: "https://pub.dev"
     source: hosted
-    version: "0.7.7"
+    version: "0.7.11"
   time:
     dependency: transitive
     description:
@@ -1767,6 +1783,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.4.0+2"
+  vm_service:
+    dependency: transitive
+    description:
+      name: vm_service
+      sha256: "0016aef94fc66495ac78af5859181e3f3bf2026bd8eecc72b9565601e19ab360"
+      url: "https://pub.dev"
+    source: hosted
+    version: "15.2.0"
   volume_controller:
     dependency: transitive
     description:
@@ -1826,11 +1850,9 @@ packages:
   webplayer_embedded:
     dependency: "direct main"
     description:
-      path: "."
-      ref: "1d78923edd091b90d362ce9587aacf8ce83a93fa"
-      resolved-ref: "1d78923edd091b90d362ce9587aacf8ce83a93fa"
-      url: "https://github.com/d1y/webplayer_embedded"
-    source: git
+      path: "packages/webplayer_embedded"
+      relative: true
+    source: path
     version: "0.0.1"
   webview_flutter:
     dependency: "direct main"
@@ -1944,5 +1966,5 @@ packages:
     source: hosted
     version: "3.1.3"
 sdks:
-  dart: ">=3.9.0 <4.0.0"
+  dart: ">=3.10.0-0 <4.0.0"
   flutter: ">=3.35.0"

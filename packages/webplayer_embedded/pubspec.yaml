@@ -1,0 +1,7 @@
+name: webplayer_embedded
+description: Local compatibility implementation for CatMovie's desktop web player.
+version: 0.0.1
+publish_to: none
+
+environment:
+  sdk: '>=3.9.0 <4.0.0'

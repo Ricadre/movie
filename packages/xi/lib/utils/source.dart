@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:xi/xi.dart';
 
@@ -165,7 +167,7 @@ class SourceUtils {
         return tryParseDynamic(cacheAsMap);
       } else {
         // 如果是对象, 则尝试解析 .data / .mirrors 节点
-        var _rootKeys = ['mirrors', 'data'];
+        var _rootKeys = ['sites', 'mirrors', 'data'];
         var jsonDataAsMap = jsonData as Map<String, dynamic>;
         for (var key in _rootKeys) {
           if (jsonDataAsMap.containsKey(key)) {
@@ -199,15 +201,20 @@ class SourceUtils {
       var _tryData = parse(data);
       return _tryData;
     } else if (data is List) {
-      return tryParseDynamic(data.map((e) {
-        return e as Map<String, dynamic>;
-      }).toList());
+      return tryParseDynamic(
+        data.map((e) {
+          return e as Map<String, dynamic>;
+        }).toList(),
+      );
     }
     return null;
   }
 
   /// 加载网络源
-  static Future<List<ISpiderAdapter>> runTaks(List<String> sources) async {
+  static Future<List<ISpiderAdapter>> runTaks(
+    List<String> sources, {
+    FutureOr<void> Function(String sourceUrl, dynamic rawData)? onDocument,
+  }) async {
     List<ISpiderAdapter> result = [];
     await Future.forEach(sources, (String element) async {
       debugPrint("加载网络源: $element");
@@ -222,6 +229,7 @@ class SourceUtils {
           ).withNoCache(),
         );
         dynamic respData = resp.data;
+        await onDocument?.call(element, respData);
         var data = tryParseDynamic(respData);
         if (data == null) return;
         if (data is ISpiderAdapter) {
@@ -257,6 +265,7 @@ class SourceUtils {
   static dynamic mergeMirror(
     List<ISpiderAdapter> extend,
     List<ISpiderAdapter> newSourceData, {
+
     /// diff 是为了返回增加的源源量
     bool diff = false,
 
@@ -268,9 +277,7 @@ class SourceUtils {
     if (!cover) {
       for (var element in newSourceData) {
         var newDataApi = element.meta.api;
-        extend.removeWhere(
-          (element) => element.meta.api == newDataApi,
-        );
+        extend.removeWhere((element) => element.meta.api == newDataApi);
       }
       extend.addAll(newSourceData);
     } else {
@@ -283,22 +290,20 @@ class SourceUtils {
     /// 如果比对之后发现没有改变, 则返回 [0, []]
     if (newLen <= 0 && diff) return [0, []];
 
-    var copyData = extend.map(
-      (e) {
-        return {
-          'name': e.meta.name,
-          'logo': e.meta.logo,
-          'desc': e.meta.desc,
-          'nsfw': e.meta.isNsfw,
-          'jiexiUrl': e.meta.extra['jiexiUrl'] ?? '',
-          'gfw': e.meta.extra['gfw'] ?? false,
-          'api': e.meta.api,
-          'id': e.meta.id,
-          'status': e.meta.status,
-          'type': e.meta.type.name,
-        };
-      },
-    ).toList();
+    var copyData = extend.map((e) {
+      return {
+        'name': e.meta.name,
+        'logo': e.meta.logo,
+        'desc': e.meta.desc,
+        'nsfw': e.meta.isNsfw,
+        'jiexiUrl': e.meta.extra['jiexiUrl'] ?? '',
+        'gfw': e.meta.extra['gfw'] ?? false,
+        'api': e.meta.api,
+        'id': e.meta.id,
+        'status': e.meta.status,
+        'type': e.meta.type.name,
+      };
+    }).toList();
     if (diff) {
       return [newLen - len, copyData];
     }

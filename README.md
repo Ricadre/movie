@@ -71,20 +71,18 @@ yay -S xdg-user-dir xdg-utils
 
 #### **iOS 📱**
 
-自签的话建议使用:
+当前发布页没有可下载的 IPA。可在 macOS 上从本仓库生成未签名 IPA，再使用以下工具或自己的 Apple 证书签名：
 
 - [Sideloadly](https://sideloadly.io)
 - [TrollStore](https://github.com/opa334/TrollStore)
 - [NB助手](https://nbtool8.com)
 
-> [!NOTE]
-> apple-magnifier://install?url=https://github.com/waifu-project/movie/releases/latest/download/catmovie.ipa
-
-[![](https://img.shields.io/badge/-点我下载-blue?logo=github)](https://github.com/waifu-project/movie/releases/latest/download/catmovie.ipa)
+构建方法与直播源配置格式见 [iOS 自签构建](./docs/ios_self_sign.md)。
 
 ### 文档 📜
 
 - [制作源](./docs/create_source.md)
+- [iOS 自签构建](./docs/ios_self_sign.md)
 - [键盘快捷键](./docs/keyboard.md) 
 - [解析VIP视频](./docs/parse_vip.md)
 - [URL Scheme](./docs/protocol.md)

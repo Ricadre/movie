@@ -1,10 +1,10 @@
 # yaml-language-server: $schema=https://json.schemastore.org/pubspec.json
 name: catmovie
-version: 2.5.0
+version: 2.5.9+1
 publish_to: none
 description: 支持扩展播放源的播放器
 environment:
-  sdk: '>=2.17.0 <3.0.0'
+  sdk: '>=3.9.0 <4.0.0'
 
 dependencies:
   flutter:
@@ -51,33 +51,20 @@ dependencies:
     path: packages/xi
 
   hide_cursor:
-    git:
-      url: https://github.com/waifu-project/hide_cursor
-      branch: main
-      ref: 33643d93803c09455445389ad57b1da880cd04aa
-  desktop_webview_window:
-    git:
-      url: https://github.com/waifu-project/flutter-plugins
-      branch: webview_window_icon
-      ref: b8b90776e769e23e27198c297d88246a13b4e75a
-      path: packages/desktop_webview_window
-  command_palette:
-    git:
-      url: https://github.com/d1y/command_palette
-      branch: d1y
-      ref: c9cf207fccd07ecaa6de0f7ea898046ffa26ff3a
+    path: packages/hide_cursor
+  desktop_webview_window: ^0.3.0
+  command_palette: ^0.7.6
   webplayer_embedded:
-    git:
-      url: https://github.com/d1y/webplayer_embedded
-      ref: 1d78923edd091b90d362ce9587aacf8ce83a93fa
+    path: packages/webplayer_embedded
   bitsdojo_window:
     git:
       url: https://github.com/bitsdojo/bitsdojo_window
+      ref: 978d1eea0097a43dfcd89efe98cfef67ad2cd0da
       path: bitsdojo_window
   smooth_list_view:
     git:
       url: https://github.com/dridino/smooth_list_view
-      ref: main
+      ref: 2770c25f253a698da809fea9a7e2dd17012ed752
 
   provider: ^6.1.5
   dio: ^5.8.0+1
@@ -107,22 +94,20 @@ dependencies:
   media_kit:
     git:
       url: https://github.com/Predidit/media-kit.git
-      ref: main
+      ref: ad84c59faa2b871926cb31516bdeec65d7676884
       path: ./media_kit
   media_kit_video:
-    # git:
-    #   url: https://github.com/Predidit/media-kit.git
-    #   ref: main
-    #   path: ./media_kit_video
     git:
-      url: https://github.com/waifu-project/media-kit.git
-      ref: main
+      # The original waifu-project fork is no longer publicly fetchable.
+      # Use the matching public upstream revision used by the other media-kit
+      # packages so a fresh checkout can still resolve dependencies.
+      url: https://github.com/Predidit/media-kit.git
+      ref: ad84c59faa2b871926cb31516bdeec65d7676884
       path: ./media_kit_video
-    # path: /Users/d1y/code/github/media-kit/media_kit_video
   media_kit_libs_video:
     git:
       url: https://github.com/Predidit/media-kit.git
-      ref: main
+      ref: ad84c59faa2b871926cb31516bdeec65d7676884
       path: ./libs/universal/media_kit_libs_video
 
   bounce_tapper: ^1.1.4
@@ -151,7 +136,7 @@ dependency_overrides:
   media_kit:
     git:
       url: https://github.com/Predidit/media-kit.git
-      ref: main
+      ref: ad84c59faa2b871926cb31516bdeec65d7676884
       path: ./media_kit
   # media_kit_video:
   #   git:
@@ -161,40 +146,44 @@ dependency_overrides:
   media_kit_libs_video:
     git:
       url: https://github.com/Predidit/media-kit.git
-      ref: main
+      ref: ad84c59faa2b871926cb31516bdeec65d7676884
       path: ./libs/universal/media_kit_libs_video
   media_kit_libs_linux:
     git:
       url: https://github.com/Predidit/media-kit.git
-      ref: main
+      ref: ad84c59faa2b871926cb31516bdeec65d7676884
       path: ./libs/linux/media_kit_libs_linux
   media_kit_libs_ios_video:
     git:
       url: https://github.com/Predidit/media-kit.git
-      ref: main
+      ref: ad84c59faa2b871926cb31516bdeec65d7676884
       path: ./libs/ios/media_kit_libs_ios_video
   media_kit_libs_android_video:
     git:
       url: https://github.com/Predidit/media-kit.git
-      ref: main
+      ref: ad84c59faa2b871926cb31516bdeec65d7676884
       path: ./libs/android/media_kit_libs_android_video
   media_kit_libs_windows_video:
     git:
       url: https://github.com/Predidit/media-kit.git
-      ref: main
+      ref: ad84c59faa2b871926cb31516bdeec65d7676884
       path: ./libs/windows/media_kit_libs_windows_video
   media_kit_libs_macos_video:
     git:
       url: https://github.com/Predidit/media-kit.git
-      ref: main
+      ref: ad84c59faa2b871926cb31516bdeec65d7676884
       path: ./libs/macos/media_kit_libs_macos_video
 
 dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
   flutter_lints: ^6.0.0
 
   flutter_launcher_name:
     git:
       url: https://github.com/Dhanabhon/flutter_launcher_name
+      ref: 40ce43ad63452703939a07449ceb338f0a29a67c
 
   # flutter_launcher_icons: ^0.14.4
   icons_launcher: ^3.0.1
