@@ -16,7 +16,7 @@ if ! xcodebuild -version >/dev/null 2>&1; then
 fi
 
 bash script/prepare_build.sh
-flutter build ios --release --no-codesign --no-pub --verbose
+flutter build ios --release --no-codesign --no-pub
 
 app_path="$(find build/ios/iphoneos -maxdepth 1 -type d -name '*.app' -print -quit)"
 if [[ -z "$app_path" ]]; then
